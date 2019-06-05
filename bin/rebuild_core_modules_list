@@ -1,0 +1,31 @@
+#!/usr/bin/perl -w
+
+#
+# This script is just usefull for wbmtranslator maintainer (me :-) ).
+# It rebuild both webmin/usermin core-modules database for internal use.
+# 
+
+use LWP::UserAgent;
+use Cwd;
+use strict;
+
+my %mods = ();
+my ($dir, $file) = (defined ($ARGV[0]) && $ARGV[0] eq 'u') ? 
+  ('umodules', 'usermin') : ('modules', 'webmin');
+my $localpath = getcwd.'/../data';;
+
+my $ua = LWP::UserAgent->new ();
+my $r = $ua->get ("http://download.webmin.com/download/$dir/");
+
+if ($r->is_success)
+{
+  my @ls = split (/\n/, $r->decoded_content);
+  foreach my $l (@ls)
+  {
+    (($l =~ /HREF=\"([^\.]+)\.wbm/i) && ($mods{$1} = 1));
+  }
+}
+
+open (DEST, '>', "$localpath/$file-core-modules.data");
+print DEST join("\n", keys (%mods));
+close (DEST);

@@ -1,0 +1,41 @@
+2019-05-16 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* fr: Added UTF-8 translation.
+
+2006-05-21 Piotr Gbyliczek <peemhq@gmail.com>
+
+	* pl: Creation of Polish translation.
+
+2004-05-26  Cristian Rigamonti <cri@linux.it>
+
+	* it: Updated Italian translation (general.it.html,
+	help.it.html, send.it.html)
+
+2004-05-25 Carlos Jordao <carlosjordao@yahoo.com>
+
+	* pt_BR: Creation of Brasilian translation.
+
+2004-05-25  Martin Mewes <translations@webmin.com>
+
+	* en: Updated general.html to reflect listing of
+	available modules for download or deletion.
+	
+	* de: Updated general.de.html
+
+2004-05-14  Cristian Rigamonti <cri@linux.it>
+
+	* en: fixed some typos (send.html, module.html).
+
+	* it: Cirst Italian translation.
+
+2004-05-13 Martin Mewes <mm@mewes.tv>
+
+	* de: Updated german translation.
+	
+2004-05-09 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* fr: Creation of french translation.
+	
+2004-05-09 Martin Mewes <mm@mewes.tv>
+
+	* de: Creation of german translation.
