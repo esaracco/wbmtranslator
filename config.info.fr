@@ -1,0 +1,13 @@
+line_global=Section globale,11
+trans_webmin=Traduction de:,1,1-Webmin,0-Usermin
+trans_working_path=Répertoire de travail,7
+line_email=Courrier,11
+trans_team_email=Email de l'équipe de traduction de webmin<br>(Défaut: <code>translations@webmin.com</code>),0
+trans_email=Votre E-Mail,0
+trans_name=Votre nom,0
+trans_use_mailboxes=Utiliser les paramètres du module Read User Mail pour envoyers les E-Mails,1,1-Oui,0-Non
+trans_smtp=Serveur SMTP (<small>si vous ne voulez pas utiliser les paramètres de Read User Mail</small>),0
+line_auth=Authentification SMTP (<small>si vous ne voulez pas utiliser les paramètres de Read User Mail</small>),11
+trans_smtp_method=Méthode,4,LOGIN-LOGIN,PLAIN-PLAIN,CRAM-MD5-CRAM-MD5,NTLM-NTLM
+trans_smtp_user=Identifiant,0
+trans_smtp_pwd=Mot de passe,0

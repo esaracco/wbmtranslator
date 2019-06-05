@@ -1,0 +1,6 @@
+trans_webmin=1
+trans_working_path=/root
+trans_smtp=
+trans_email=
+trans_team_email=translations@webmin.com
+trans_use_mailboxes=1

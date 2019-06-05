@@ -1,0 +1,3 @@
+trans_email=你的电子邮件
+trans_smtp=SMTP 主机
+trans_team_email=Webmin 翻译小组的电子邮箱<br>(默认：<code>translations@webmin.com</code>),0

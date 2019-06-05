@@ -1,0 +1,13 @@
+line_global=Seção Global,11
+trans_webmin=Traduções do:,1,1-Webmin,0-Usermin
+trans_working_path=Diretório de trabalho,7
+line_email=E-Mail,11
+trans_team_email=E-mail do time de tradução do Webmin<br>(Padrão: <code>translations@webmin.com</code>),0
+trans_email=Seu E-Mail,0
+trans_name=Seu nome,0
+trans_use_mailboxes=Módulo de configuração de leitura de e-mail do usuário para envio E-Mails,1,1-Sim,0-Não
+trans_smtp=Host SMTP ,(<small>se você não deseja usar o as configurações de correio do usuário </small>),0
+line_auth=Autenticação SMTP (<small>se você não deseja usar o as configurações de correio do usuário </small>),11
+trans_smtp_method=Método,4,LOGIN-LOGIN,PLAIN-PLAIN,CRAM-MD5-MD5,NTLM-NTLM
+trans_smtp_user=Usuário,0
+trans_smtp_pwd=Senha,0

@@ -1,0 +1,687 @@
+2019-06-05 Emmanuel Saracco <emmanuel@esaracco.fr>
+
+	* wbmtranslator is now hosted on GitHub.
+
+2019-05-26 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Version: 0.8
+
+	* Configuration:
+
+	  - Updated webmin and Usermin core modules list.
+
+	* Translation:
+
+	  - Fixed a lot of problems with translation management and UTF-8.
+	    Please backup data before using this new release, and send me a
+	    email if things go wrong...
+
+	  - Fixed problems with ref file items update detection.
+
+	* Translation administration section:
+
+	  - Added purge of unused items in ref file.
+
+	* Translation console:
+
+	  - Fixed Reverso translation console, so it works again, and much
+	    better before.
+
+2014-07-31 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Version: 0.7.3
+
+	* Configuration:
+
+	  - Updated "*-core-modules.data".
+
+2013-03-20 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* send translations section:
+	
+	  - Increased combobox from 5 to 10 entries.
+
+2013-01-04 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Version: 0.7.2
+
+	* Configuration:
+
+	  - Updated "webmin-core-modules.data".
+
+2012-11-16 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Translation administration section:
+
+	  - Fixed a bug with Webmin translations.
+
+	* Translation console:
+
+	  - Fixed encoding.
+	  - Save/restore user translation choice in/from a cookie.
+
+2012-11-13 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Send translations section:
+
+	  - Fixed a bug with Webmin translations.
+
+2012-11-12 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Translation console:
+
+	  - Removed Bing translation console and replaced it with Reverso.
+
+	* Configuration:
+
+	  - Updated "webmin-core-modules.data". Moved *modules.data files to
+	    "data/" directory.
+
+2012-11-09 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Translation console:
+
+	  - Removed Google translation console and replace it with Bing.
+
+2011-07-27 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Other:
+
+	  - Updated wbmtranslator download URL.
+
+2009-12-25 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Version: 0.7.1
+
+	* Send translations section:
+	
+	  - Fixed a problem with email validation.
+
+2009-12-23 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Translations administration section:
+
+	  - Fixed a problem with UTF-8 detection. Now all languages appear
+	    in lists, and UTF-8 translation can be done.
+	
+
+2009-12-06 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Version: 0.7
+
+	* Translations archives:
+
+	  - Now include all needed Usermin files.
+
+	* Configuration:
+
+	  - Fixed a problem in core modules list updater script.
+	  - Updated Webmin core modules list.
+
+2009-07-23 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Configuration:
+
+	  - Added "trans_webmin" and "trans_working_path" option in a new
+	    "line_global" section to avoid buggy themes that were not display
+	    them in the configuration page.
+
+2009-07-21 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Other:
+	
+	  - Added support for themes translation (task #1907).
+
+	* Module information translation section:
+
+	  - Added support for long description translation (bug #1908).
+
+
+	* Google translation console:
+
+	  - Always use UTF-8 for translator assistant. Waiting for translators
+	    feedback!
+
+	* Configuration:
+
+		- Updated webmin and Usermin core modules list.
+
+2008-03-29 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Version: 0.6.3
+
+	* Google translation console:
+
+	  - Fixed a lot of encoding problems.
+	  - Added new languages (Greek and Dutch)
+
+	* Send translations section:
+
+	  - Added translator name information.
+	  - Updated E-Mail content to Webmin translations team to be more 
+	    consistent regarding to the translation type (Webmin ou Usermin).
+
+	* Configuration:
+	  - Added variable "trans_name" in "config.info" file.
+	  - Updated webmin core modules list.
+
+2008-03-27 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Informations translation:
+
+	  - Fixed a problem with "module.info" translation when it does not
+	    have all descriptions for all module's languages.
+
+2007-10-06 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Version: 0.6.2
+
+	* Configuration:
+		- Updated webmin and Usermin core modules list.
+
+	* Other:
+		- Fixed a problem with the "Google translation console". It
+		  work again now :-) Added new languages.
+
+2006-06-18 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Other:
+		- Fixed a problem's assumption with module name.
+
+2006-05-23 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Version: 0.6.1
+
+	* Configuration:
+		- Updated webmin core modules list.
+
+2006-05-21 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Translations archives:
+		- Do not send hidden files/directories anymore.
+		- Now "help/" directory content is taken in account (thanks to 
+		  Piotr Gbyliczek).
+
+2006-03-23 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Configuration:
+		- Updated webmin core modules list.
+
+2005-05-19 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Version: 0.6.0
+
+2005-04-26 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Translation monitoring:
+		- Bug #431 (Automatic check for new strings fails for
+		  webmin-core) should be fixed now.
+
+2005-02-01 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Version: 0.6rc3
+
+2005-01-30 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* WARNING:
+		- Please delete the wbmtranslator working file, or at least
+		  rebuild all fingerprints you need.
+
+	* Web interface section:
+		- Bug #404 (Bad face and a full translation) should be fixed
+		  now. Some other bugs should have been fixed here.
+
+2005-01-29 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Translations archives:
+		- Bug #403 (Bug in tarring ...) should be fixed now.
+		- Bug #373 (Core-Module gets Non-Core-Module) should really be
+		  fixed now.
+		
+
+2005-01-23 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Translations archives:
+		- Fixed a bug in 'config.info.*' handling.
+		- Bug #373 (Core-Module gets Non-Core-Module) should be fixed
+		  now.
+
+2005-01-16 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Translations administration section:
+		- Task #400 (hanging the way of tarring ...) should be ok now.
+
+2005-01-01 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Usermin translation:
+		- Fixed a problem with "lang/" and "ulang/". When there is
+		  no "ulang/" we translate "lang/".
+
+2004-10-21 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* version: 0.6rc2
+
+	* web interface section:
+		- In rc1 we included a feature, which deletes the 
+		  "log_="-entries from 	translated "lang/xx". Now in rc2 we 
+		  have removed this functionality because of a misunderstanding
+		  on the way Webmin is writing his log-files.
+		  
+		  Jamie Cameron:
+		  "[...] Fortunately, this isn't really a problem, as Webmin 
+		  always stores the logs internally in an english-like format, 
+		  which is converted to the user's native language only for 
+		  display. If you look at /var/webmin/webmin.log, you can see 
+		  this internal format which could be copied to any system 
+		  regardless of language configured - so if someone wanted to 
+		  send me logs for debugging, they could send that file rather
+		  than a screen dump of the Webmin Actions Log module.
+		  The log_* strings are used only for converting this file for
+		  display, and are not stored in the file directly. [...]"
+
+	* configuration:
+		- Removed 1 line:
+			- trans_log_entries
+		- Added 1 line:
+			- trans_working_path
+		- Bug #349 (Working path must be defined in the module 
+		  configuration) should be ok now.
+
+2004-10-20 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* other:
+		- Fixed a size conversion error in 
+		  trans_get_string_from_size ().
+	
+	* configuration:
+		- The SMTP server is not required anymore if user choose to use
+		  the mailboxes module to send E-Mails.
+
+2004-10-20 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* version: 0.6rc1
+
+	* WARNING:
+		- Please backup your data (!) and edit the module 
+		  configuration before using this first release candidate.
+
+	* configuration:
+		- Added 1 new line and changed some others in "config.info":
+			- trans_log_entries
+	
+	* web interface section:
+		- Task #344 (Do not translate logfile entries) should be ok
+		  now.
+
+2004-10-19 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* configuration:
+		- Added 1 new line in "config.info":
+			- trans_use_mailboxes
+		- Now user can choose between using mailboxes module settings 
+		  to send E-Mails, or its own custom settings.
+
+2004-10-18 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* configuration:
+		- Added 2 new lines in "config.info":
+			- authentication section title
+			- trans_smtp_method
+
+	* send translations section:
+		- Task #346 (After sending stuff via email redirect to
+		  main-administration) is ok now.
+
+	* other:
+		- Bug #337 (Sending per email not allowed by
+		  password-protected smtp-server) was reopened because
+		  it didn't work. It should be fixed now.
+
+2004-10-17 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* translations archives:
+		- Bug #345 (Missing file in translations archives) should be
+		  fixed now.
+	
+	* dependencies:
+		- Removed dependency to MIME-Lite.
+		- Added dependency to Mail::Sender.
+
+	* configuration:
+		- Added 2 new module configuration variables:
+			- trans_smtp_user.
+			- trans_smtp_pwd.
+		- Changed trans_smtp_pwd type from 0 to 12.
+
+	* configuration translation section:
+		- Added a warning regarding "-" and "," special encoding.
+
+	* other:
+		- Bug #337 (Sending per email not allowed by
+		  password-protected smtp-server) should be ok now.
+
+2004-09-27 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* translations administration section: Task #191 (delete translation
+	should work partially as well) should be ok now.
+
+2004-06-28 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* WARNING: You must delete manually your old "/tmp/.translator/"
+	directory in order to use this new release.
+
+	* configuration: Added a configuration check on the main page.
+
+	* compatibility: Task #138 (Usermin Compability) should be ok now.
+	However it need to be *seriously* tested (both parts: webmin and
+	usermin translations) to be sure there is no regression for the
+	webmin translation part. To work on Usermin or Webmin translations,
+	just select "Usermin" or "Webmin" in the module's configuration
+	"Translation of:" line.
+
+2004-06-27 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* version: 0.5.2
+
+2004-06-26 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* other: Now fingerprints are managed by user and not in the global
+	modules's cache directory. Task #133 (Introducing a hotlist) is ok
+	now.
+
+2004-06-25 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* other: Task #137 (The Core Webmin Compability) is ok now.
+
+2004-06-24 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* other: Task #174 (How to choose a module to translate, if the 
+	language does not exist) is ok now.
+
+	* translations archives: Task #176 (Introducing Translation 
+	Management). There is now a subsection "Translations archives
+	management" in the administration section from within you can
+	create/download/delete archives that have been done both from the
+	"Send translations via E-Mail" section or from this new "Translations
+	archives management".
+
+2004-06-24 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* other: Task #175 (Move the icons on the main page) is ok now.
+
+2004-05-28 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* version: 0.5.1
+
+2004-05-28 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* module information translation section: Correction of
+	bug #171 (Webmin-Core-Modules are not refreshed). Removed the
+	"Refresh" button.
+
+2004-05-27 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* send translations section: Added two radio boxes to choose the
+	type of the modules to work with ('core' or 'non-core'). Also when a
+	archive contain more than one module their names are not displayed 
+	anymore in the archive name (we put 'multiple' instead). Some other 
+	enhancements.
+
+2004-05-26 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* send translations section: A bug has been fixed in archive files
+	selection.
+
+2004-05-26 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* web interface section: Cancelled previous Martin removal (because
+	I do not see any problem with this script).
+
+	* send translations section: Task #169 (Multiple translations in one
+	tar.gz?) is ok now, but it must be seriously tested.
+
+2004-05-25 Martin Mewes <translations@webmin.com>
+
+	* web interface section: Removed a HTML-Destroyment in
+	interface_edit.cgi.
+
+2004-05-25 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* help translation section: Correction of bug #168 ("Conversion &#ddd;
+	entities..." text goes into textarea help section).
+
+2004-05-25 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* web interface section: perl syntax fix.
+
+2004-05-25 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* translations administration section: Task #147 (Introducing a
+	folder where to keep translations) is ok now. Bug #148 (Temporary
+	files are not deleted) has been closed.
+
+2004-05-24 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* send translations section: Task #157 ("Send E-Mail"-section) is ok
+	now. We also maintain a cache to save default emails for non-webmin
+	modules.
+
+	* others: Enhancement of the management of temporary files.
+
+2004-05-24 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* configuration translation section: Correction of bug #167 (Comma is
+	used to parse data for config.info by webmin).
+
+2004-05-24 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* web interface section: Correction of bug #155 (HTML-Entities (next
+	generation)).
+
+2004-05-16 Martin Mewes <translations@webmin.com>
+
+	* translations: Translation of Help-Files changes in help_edit.cgi 
+	results to move "Content to translate in ..." and "Translation" to be 
+	moved to the language source files and will be used as a string.
+
+2004-05-15 Martin Mewes <translations@webmin.com>
+
+	* General Administration Section: Updated Hardcoded 
+	"Description to translate:" has been moved to a language string.
+	Hardcoded "Language" + "Description" have been moved to a language 
+	string. Hardcoded "Update"-Button-Value has been moved to a language 
+	string.
+
+2004-05-14 Martin Mewes <translations@webmin.com>
+
+	* documentation: Updated README.
+	* other: Correction of a little HTML-Bug. Added to AUTHORS.
+
+2004-05-12 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* translations administration section: Removed "Remove unused
+	items" feature because it seems to be dangerous.
+
+2004-05-09 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* help translation section: Correction of a little bug in HTML display.
+
+2004-05-09 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* help: Added some help files from Martin Mewes.
+
+2004-05-08 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* version: 0.5.0
+
+	* other: We now use webmin session id to store our temporary files.
+
+2004-05-07 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* module informations translation section: Correction of
+	bug #153 (HTML-Entities are not saved to module.info).
+
+2004-05-07 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* send translations section: Correction of a problem in archive
+	size calculation that comes with the lastest CVS commits.
+
+2004-05-07 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* send translations section: Task #149 (Insert a textfield to "send
+	translations") is ok now. Also added translation archive's properties
+	in email's body.
+
+2004-05-07 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* translations administration section: Correction of bug
+	#152 (General Administration deletes used items instead of keeping
+	them).
+
+2004-05-06 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* other: Rows are now sorted by language name in interface and
+	config tables.
+
+2004-05-06 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* other: Update and bugs fixes on the "trans_char2ent()" function.
+
+2004-05-05 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* web interface section: Correction of a bug (bad syntax) in
+	interface_edit_added.cgi that was preventing the page to be displayed.
+
+2004-05-05 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* other: Correction of a bug when removing a translation (help/
+	corresponding files were not deleted). Added a filter to avoid
+	encoding/decoding non "iso-8859-1" language files (this filter method 
+	should change on jamie next webmin release). Typo fixes. Code 
+	cleaning. Some more code comments.
+
+2004-05-05 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* translations administration section: Correction of several bugs
+	in "search for unused items" functionnality.
+
+	* menu panel: Now icons are displayed with a different color
+	when we are working in their section.
+
+	* other: Now it is possible to display only modified items when
+	editing a translation.
+
+2004-05-04 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* translations administration section: Correction of several bugs
+	in "search for unused items" functionnality.
+
+	* help translation section: Task #136 (Introducing translation
+	of HTML-Pages) is ok now.
+
+	* other: Choice of default language has been removes, assuming that
+	all webmin modules reference language is "en".
+
+	* dependencies: New dependency on Date::Manip.
+
+2004-05-03 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* informations translation section: Task #136 (Introducing translation 
+	of HTML-Pages) is 50% ok.
+
+	* translations administration section: All administrative tasks (
+	creation/deletion of a translation, search for unused items etc.) have
+	been moved in this new section.
+
+2004-05-03 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* translation: Cristian Rigamonti maintain the italian translation.
+
+	* other: Added a general menu on the top of each section.
+
+2004-05-02 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+	
+	* other: Applied patch #134 (Patch for opening links in new windows)
+	from Martin Mewes.
+
+2004-05-01 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* other: Added a "Google translation console". Translators can
+	open it and request automatic translation from a given language 
+	to another.
+
+2004-04-30 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* version: 0.4.0
+
+	* configuration: The module has been renamed "Translation assistant
+	for Webmin-Modules" and is now in "webmin" section.
+
+	* translation: Martin Mewes maintain the german translation.
+
+	* other: Special thanks to Martin Mewes for translation, support and 
+	good advice :-)
+
+2004-04-30 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* send translations section: Modified tarball file name format.
+
+	* documentation: Applied patch #128 on README from Martin Mewes.
+	Task #129 (Please hardcode the string IMPORTANT_NOTICE into the module
+	somehow) is ok.
+
+	* other: Correction of bugs #122 (Confusing entries in "already
+	translated strings" page), #124 (Bug in translation update
+	together with Bug#122) and #127 (MIME::Lite needed). 
+	Tasks #126 (Be more clear for "default" language), 
+	#131 (Please change SEND_CHOICE1) and #130 (Please change 
+	the name in module.info) are ok now. Some more debugging.
+
+2004-04-29 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* send translations section: Task #120 (tarball creation) is ok.
+
+	* other: Added wbmtranslator version plus some project's links
+	on the main page. Task #121 (Updating en file with an important notice)
+	is ok. Correction of bug #123 (Proper use of HTML-Entities). Thanks
+	to Martin Mewes for bug reports and feature requests.
+
+	* dependencies: New dependency on MIME::Lite.
+
+2004-04-16 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* version: 0.3.0
+
+	* web interface section: Now it is possible to create new
+	translations.
+
+	* translation: Some corrections.
+
+	* other: Some correction in translation's status management.
+	Correction of a bug that prevented the display of some languages. 
+	Correction of a bug on displaying translations texts containing 
+	HTML tags.
+
+2004-04-14 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* web interface section: Now you can search for unused translation
+	items and view/remove them from main translation file.
+
+2004-04-12 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* version: 0.2.0
+
+	* configuration translation section: Correction of a bug on updating
+	main "config.info" file.
+
+	* other: Now wbmtranslator can detect content modifications instead
+	of adding/deleting functions only. When modifications are detected
+	user can display/view/update them and view a diff of old/new values.
+	Correction of a problem in informationals messages.
+
+2004-04-06 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* version: 0.1.0
+
+	* Initial version: This is a "alpha" release, so backup your
+	webmin modules data before using it!

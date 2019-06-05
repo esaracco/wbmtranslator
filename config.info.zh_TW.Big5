@@ -1,0 +1,11 @@
+trans_webmin=翻譯給:,1,1-Webmin,0-Usermin
+trans_working_path=工作路徑,7
+line_email=E&#45;郵件,11
+trans_team_email=Webmin 翻譯團隊電子郵件<br>(預設: <code>translations@webmin.com</code>),0
+trans_email=您的電子郵件,0
+trans_use_mailboxes=使用讀取使用者郵件的設定來寄送E&#45;郵件,1,1-是,0-否
+trans_smtp=SMTP 主機(<small>如果您不想要使用讀取使用者郵件的設定</small>),0
+line_auth=SMTP 認證 (<small>如果您不想要使用讀取使用者郵件的設定</small>),11
+trans_smtp_method=方式,4,LOGIN-LOGIN,PLAIN-PLAIN,CRAM&#45;MD5-CRAM&#45;MD5,NTLM-NTLM
+trans_smtp_user=使用者,0
+trans_smtp_pwd=密碼,0

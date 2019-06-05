@@ -1,0 +1,12 @@
+trans_webmin=번역 대상:,1,1-Webmin,0-Usermin
+trans_working_path=작업 경로,7
+line_email=이메일,11
+trans_team_email=Webmin 번역팀 메일주소<br>(기본: <code>translations@webmin.com</code>),0
+trans_email=번역자 메일 주소,0
+trans_name=번역자 이름,0
+trans_use_mailboxes=E-Mail 전송을 위하여 Read User Mail 모듈 설정 사용,1,1-Yes,0-No
+trans_smtp=SMTP 호스트 (<small>Read User Mail 설정을 사용하지 않을 경우</small>),0
+line_auth=SMTP 인증 (<small>Read User Mail 설정을 사용하지 않을 경우</small>),11
+trans_smtp_method=인증방식,4,LOGIN-LOGIN,PLAIN-PLAIN,CRAM-MD5-CRAM-MD5,NTLM-NTLM
+trans_smtp_user=사용자,0
+trans_smtp_pwd=암호,0

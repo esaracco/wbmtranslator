@@ -1,0 +1,13 @@
+line_global=Globale Sektion,11
+trans_webmin=Übersetzung von:,1,1-Webmin,0-Usermin
+trans_working_path=Gültiger Arbeitspfad,7
+line_email=E-Mail,11
+trans_team_email=Webmin-Übersetzungs-Team E-Mail-Adresse<br>(Standard: <code>translations@webmin.com</code>),0
+trans_email=Ihre E-Mail-Adresse,0
+trans_name=Ihr Name,0
+trans_use_mailboxes=Benutze die Einstellungen des Modules &quot;E-Mail lesen<br>und Versenden&quot; für das Senden von E-Mails,1,1-Ja,0-Nein
+trans_smtp=Ihr SMTP-Server (<small>wenn die Einstellung aus &quot;E-Mail lesen und versenden&quot; nicht genutzt werden</small>),0
+line_auth=SMTP-Authentifizierung (<small>wenn die Einstellung aus &quot;E-Mail lesen und versenden&quot; nicht genutzt werden</small>),11
+trans_smtp_method=Methode,4,LOGIN-LOGIN,PLAIN-PLAIN,CRAM-MD5-CRAM-MD5,NTLM-NTLM
+trans_smtp_user=SMTP-Login,0
+trans_smtp_pwd=SMTP-Passwort,0
