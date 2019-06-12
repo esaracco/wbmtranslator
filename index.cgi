@@ -53,7 +53,7 @@ my $ret = '';
 # remove app from monitor
 &trans_set_user_var ("monitor_" . &trans_get_current_app () . "_$remove", 0) if ($remove ne '');
 
-&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, "help", 1, 1, 0, undef, undef, undef, "<a href=\"https://github.com/esaracco/wbmtranslator\" target=\"_BLANK\">$text{'PROJECT_HOMEPAGE'}</a>&nbsp;|&nbsp;<a href=\"http://download.webmin.com/devel/tarballs/\" target=\"_BLANK\">$text{'LATEST_WEBMIN'}</a>");
+&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, "help", 1, 1, 0, undef, undef, undef, "<a href=\"http://wbmtranslator.esaracco.fr\" target=\"_BLANK\">$text{'PROJECT_HOMEPAGE'}</a>&nbsp;|&nbsp;<a href=\"http://download.webmin.com/devel/tarballs/\" target=\"_BLANK\">$text{'LATEST_WEBMIN'}</a>");
 print "<hr>\n";
 
 &trans_main_check_config ();
