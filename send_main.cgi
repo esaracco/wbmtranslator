@@ -169,22 +169,20 @@ if (scalar (@array_app))
     {print qq(<option value="$m">$m</option>\n);}
   print "</select></p>";
   
+  print "<ul>";
+
   if ($module_type eq 'core')
   {
     print qq(
-      <p>
-      <ul>
         <li><input type="submit" value="$text{'CLICK_HERE'}" name="send_email_webmin"> $text{'SEND_CHOICE1'}</li>
-        </p>
     );
   }
   
   print qq(
-    <p>
     <li><input type="submit" value="$text{'CLICK_HERE'}" name="send_email_owner"> $text{'SEND_CHOICE2'}: <input type="text" value="$email" name="email">.</li>
-    </ul>
-    </p>
   );
+
+  print "</ul>";
   
   print qq(</form>);
   print qq(</p>);
