@@ -1,4 +1,4 @@
-# Copyright (C) 2004-2012
+# Copyright (C) 2004-2019
 # Emmanuel Saracco <emmanuel@esaracco.fr>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -1576,17 +1576,6 @@ sub trans_translate_console_get_javascript ( $ )
     }
     </script>
   );
-}
-
-# trans_translate_console_display_link ()
-# IN: -
-# OUT: -
-#
-# print the javascript link to open the translation console popup
-# 
-sub trans_translate_console_display_link ()
-{
-  print qq(<a href="javascript:translate_console_open ();">$text{'TRANSLATE_CONSOLE_LINK'}</a>);
 }
 
 # trans_get_menu_icons_panel ( $ $ )
