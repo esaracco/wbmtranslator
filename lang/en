@@ -153,6 +153,7 @@ MSG_ERROR_WORKING_PATH=Please specify a valid working path in the module's confi
 MSG_REMOVED_UNUSED=The unused items were removed
 WEB_INTERFACE=Web Interface
 VIEW_UNUSED_DESCRIPTION=The following items are not used anymore in <code>%s</code> module's files. This section enables you to withdraw them.
+VIEW_UNUSED_WARNING=Be very careful before deleting these items. They may be associated with dynamic content and in case they are false positives!
 MSG_ERROR_ENTER_EMAIL=Please enter a E-Mail
 ARCHIVE_CONTENT=Archive content
 NOT_SO_BAD=Not so bad

@@ -200,6 +200,7 @@ VIEW_REMOVED_DESCRIPTION=Les éléments suivants ont été supprimés de la version d
 VIEW_REMOVED_TITLE=[<code>%s</code>] Eléments supprimés
 VIEW_UNUSED=Voir les éléments inutilisés
 VIEW_UNUSED_DESCRIPTION=Aucun des éléments suivants n'est plus utilisé dans les fichiers du module <code>%s</code>. Cette section vous permet de les supprimer.
+VIEW_UNUSED_WARNING=Faites très attention avant de supprimer ces éléments. Il se peut qu'ils soient associés à des contenus dynamiques et dans cas il s'agit de faux-positifs!
 VIEW_UNUSED_TITLE=Eléments inutilisés
 WEBMIN_SPECIAL=<p>La traduction de l'application Webmin elle-même <b>nécessite plus de travail</b> car il existe 2 fichiers <code>lang</code>.</p><p>Veuillez choisir le fichier sur lequel vous voulez travailler:</p>
 WEB_INTERFACE=Interface Web

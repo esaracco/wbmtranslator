@@ -215,7 +215,7 @@ if ($app ne '')
     printf qq(<td $cb>$text{'FOUND_UNUSED_ITEMS'}</td>), $unused;
     if ($unused > 0)
     {
-      print qq(<td><a href="admin_view_unused.cgi?search_type=$search_type&referer=admin_main&app=$app"><img src="images/view.png" alt="$text{'VIEW'}" title="$text{'VIEW_UNUSED'}" border=0></a><a href="admin_view_unused.cgi?search_type=$search_type&referer=admin_main&remove=1&app=$app&t=$ref_lang"><img src="images/delete.png" alt="$text{'DELETE'}" title="$text{'DELETE_UNUSED'}" border=0></a></td>);
+      print qq(<td><a href="admin_view_unused.cgi?search_type=$search_type&referer=admin_main&app=$app"><img src="images/view.png" alt="$text{'VIEW'}" title="$text{'VIEW_UNUSED'}" border=0></a></td>);
     }
     else
     {

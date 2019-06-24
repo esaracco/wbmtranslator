@@ -74,6 +74,7 @@ print "<hr>\n";
 
 print qq(<h1>$text{'VIEW_UNUSED_TITLE'}</h1>);
 printf qq(<p>$text{'VIEW_UNUSED_DESCRIPTION'}</p>), $app;
+print qq(<p><b>$text{'VIEW_UNUSED_WARNING'}</b></p>);
 
 print qq(<p>);
 print qq(<form action="admin_view_unused.cgi" method="post">);
