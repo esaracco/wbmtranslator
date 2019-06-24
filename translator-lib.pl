@@ -37,42 +37,42 @@ if ($config{'trans_use_mailboxes'})
 my @perl_deps = ();
 
 eval "use File::Path qw(make_path)";
-push @perl_deps, 'File::Path' if ($@ ne '');
+push @perl_deps, 'File::Path' if ($@);
 eval "use File::Copy";
-push @perl_deps, 'File::Copy' if ($@ ne '');
+push @perl_deps, 'File::Copy' if ($@);
 eval "use Encode";
-push @perl_deps, 'Encode' if ($@ ne '');
+push @perl_deps, 'Encode' if ($@);
 eval "use JSON";
-push @perl_deps, 'JSON' if ($@ ne '');
+push @perl_deps, 'JSON' if ($@);
 eval "use HTML::Entities";
-push @perl_deps, 'HTML::Entities' if ($@ ne '');
+push @perl_deps, 'HTML::Entities' if ($@);
 eval "use POSIX";
-push @perl_deps, 'POSIX' if ($@ ne '');
+push @perl_deps, 'POSIX' if ($@);
 eval "use File::Basename";
-push @perl_deps, 'File::Basename' if ($@ ne '');
+push @perl_deps, 'File::Basename' if ($@);
 eval "use Digest::MD5 qw(md5_hex)";
-push @perl_deps, 'Digest::MD5' if ($@ ne '');
+push @perl_deps, 'Digest::MD5' if ($@);
 eval "use Date::Manip";
-push @perl_deps, 'Date::Manip' if ($@ ne '');
+push @perl_deps, 'Date::Manip' if ($@);
 eval "use MIME::Lite";
-push @perl_deps, 'MIME::Lite' if ($@ ne '');
+push @perl_deps, 'MIME::Lite' if ($@);
 if (!$config{'trans_use_mailboxes'})
 {
   eval "use Mail::Sender";
-  push @perl_deps, 'Mail::Sender' if ($@ ne '');
+  push @perl_deps, 'Mail::Sender' if ($@);
   
   # if CRAM-MD5 smtp auth method
   if ($config{trans_smtp_method} eq 'CRAM-MD5')
   {
     eval "use Digest::HMAC_MD5";
-    push @perl_deps, 'Digest::HMAC_MD5' if ($@ ne '');
+    push @perl_deps, 'Digest::HMAC_MD5' if ($@);
   }
   
   # if NTLM smtp auth method
   elsif ($config{trans_smtp_method} eq 'NTLM')
   {
     eval "use Authen::NTLM";
-    push @perl_deps, 'Authen::NTLM' if ($@ ne '');
+    push @perl_deps, 'Authen::NTLM' if ($@);
   }
 }
 # all binaries paths are here
@@ -114,11 +114,12 @@ sub trans_main_check_config ()
   my $ok = 0;
   my $msg = '';
 
-  if ($config{'trans_webmin'} != 1 && not %config_usermin)
+  if ($config{'trans_webmin'} != 1 && !%config_usermin)
   {
     $msg = $text{'MSG_ERROR_USERMIN'};
   }
-  elsif ($config{'trans_working_path'} eq '' || ! -d $config{'trans_working_path'})
+  elsif ($config{'trans_working_path'} eq '' ||
+         ! -d $config{'trans_working_path'})
   {
     $msg = $text{'MSG_ERROR_WORKING_PATH'}
   }
@@ -137,7 +138,7 @@ sub trans_main_check_config ()
 
   # if there was a problem, exit displaying
   # a message
-  &trans_check_config_exit ($msg) if (not $ok);
+  &trans_check_config_exit ($msg) if (!$ok);
 
   # create config directory for the current user
   make_path (
@@ -388,9 +389,7 @@ sub trans_get_items ( $ )
   open (H, '<', $path);
   foreach my $line (<H>)
   {
-    next if 
-      $line =~ /^#/ or 
-      $line =~ /^\s+#/;
+    next if ($line =~ /^\s*#/);
     
     if ($line =~ /=/)
     {
@@ -398,7 +397,7 @@ sub trans_get_items ( $ )
       $name =~ s/(^\s+|\s+$)//g;
       $value =~ s/(^\s+|\s+$)//g;
 
-      next if $name eq '' or $value eq '';
+      next if ($name eq '' || $value eq '');
 
       $file{"$name"} = $value;
     }
@@ -688,7 +687,7 @@ sub trans_get_unused ( $ $ $ )
   %hash = &trans_get_items ($path_lang);
   foreach $key (keys %hash)
   {
-    next if ($type eq 'config' and $key =~ /^line[0-9]*/);
+    next if ($type eq 'config' && $key =~ /^line\d*/);
     my @array = split (/\n/, `$all_path{'grep'} "$key" $grep_string`);
 
     if (not grep (/[\'|\"]$key[\'|\"]/, @array))
@@ -820,7 +819,7 @@ sub trans_create_translation ( $ $ )
   if ($config{'trans_webmin'} == 1)
   {
     # config.info
-    if ((-f "$path/config.info") and (! -f "$path/config.info.$lang"))
+    if ((-f "$path/config.info") && (! -f "$path/config.info.$lang"))
     {
       open (H, '>', "$path/config.info.$lang") && close (H);
     }
@@ -1359,11 +1358,12 @@ sub trans_check_config_exit ( $ )
 # 
 sub trans_send_check_config ()
 {
-  &trans_check_config_exit ($text{'MSG_CONFIG_SMTP_EMAIL'}) 
-    if (
-      (!$config{'trans_use_mailboxes'} && !$config{'trans_smtp'}) or
-      (!$config{'trans_email'})
-    );
+  if (
+    !$config{'trans_use_mailboxes'} && !$config{'trans_smtp'} ||
+    !$config{'trans_email'})
+  {
+    &trans_check_config_exit ($text{'MSG_CONFIG_SMTP_EMAIL'});
+  }
 }
 
 # trans_email_check ( $ )
@@ -1374,9 +1374,7 @@ sub trans_send_check_config ()
 # 
 sub trans_email_check ( $ )
 {
-  my $email = shift;
-
-  return ($email =~ /[ |\t|\r|\n]*\"?([^\"]+\"?@[^ <>\t]+\.[^ <>\t][^ <>\t]+)[ |\t|\r|\n]*/) ? $1 : '';
+  return (shift =~ /[ |\t|\r|\n]*\"?([^\"]+\"?@[^ <>\t]+\.[^ <>\t][^ <>\t]+)[ |\t|\r|\n]*/) ? $1 : '';
 }
 
 # trans_char2ent ( $ $ )
@@ -1652,8 +1650,8 @@ sub trans_modules_list_get_options ( \@ $ )
   foreach my $m (@mlist)
   {
     next if (
-      ($module_type eq 'core' and not &trans_is_webmin_module ($m->{'dir'})) or
-      ($module_type eq 'non-core' and &trans_is_webmin_module ($m->{'dir'}))
+      $module_type eq 'core' && !&trans_is_webmin_module ($m->{'dir'}) ||
+      $module_type eq 'non-core' && &trans_is_webmin_module ($m->{'dir'})
     );
     printf qq(<option value="%s"%s>%s : %s</option>\n),
       $m->{'dir'}, (grep /^$m->{'dir'}$/, @app) ? ' selected="selected"' : '', 
@@ -1741,10 +1739,14 @@ sub trans_get_user_var ( $ )
 
   open (H, '<', "/$config{'trans_working_path'}/.translator/".
                 "$remote_user/user_vars") || return '';
-  while ((my $line = <H>) && $ret eq '') 
+  while (my $line = <H>) 
   {
     my ($n, $v) = split (/=/, $line);
-    $ret = $v if ($n eq $name);
+    if ($n eq $name)
+    {
+      $ret = $v;
+      last;
+    }
   }
   close (H);
 
@@ -1813,9 +1815,8 @@ sub trans_set_user_var ( $ $ )
 sub trans_monitor_panel ( $ )
 {
   my $app = shift;
-  my $monitor = &trans_get_user_var ();
-  
-  $monitor = &trans_get_user_var ("monitor_" . &trans_get_current_app () . "_$app");
+  my $monitor = &trans_get_user_var ('monitor_'.
+                                       &trans_get_current_app()."_$app");
   $monitor = 0 if ($monitor eq '');
   
   printf qq(
@@ -1869,7 +1870,7 @@ sub trans_monitor_news ()
       }
 
       $item .= qq(<tr><td>$app</td>);
-      if ($new > 0 or $removed > 0 or $updated > 0)
+      if ($new || $removed || $updated)
       {
         $changed = 1;
 
@@ -1893,7 +1894,7 @@ sub trans_monitor_news ()
       $removed = &trans_get_diff_removed (' ', $ref_l, \%file_ref, \%file);
       $updated = &trans_get_updated ('config', $ref_l, $app, '');
       
-      if ($new > 0 or $removed > 0 or $updated > 0)
+      if ($new || $removed || $updated)
       {
         $changed = 1;
         $item .= qq(
@@ -1956,7 +1957,7 @@ sub trans_get_path ( $ $ $ )
   my ($app, $file, $basic) = @_;
   my $path = '';
   
-  if ($app eq '' and $file eq '')
+  if ($app eq '' && $file eq '')
   {
     $path = ($config{'trans_webmin'} == 1) ?
       $root_directory : $config_usermin{'root'};
@@ -1969,7 +1970,7 @@ sub trans_get_path ( $ $ $ )
     }
     else
     {
-      if ($file =~ /^help/ or $file eq 'module.info' or $file eq 'theme.info')
+      if ($file =~ /^help/ || $file eq 'module.info' || $file eq 'theme.info')
       {
         $path = "$config_usermin{'root'}/$app/$file";
       }
