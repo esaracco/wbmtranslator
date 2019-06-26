@@ -1,5 +1,5 @@
 name=translator
-version=0.8git20190624
+version=0.8git20190626
 category=webmin
 desc=Translation Assistant for Webmin-Modules 
 desc_de=Übersetzungsassistent für Webmin-Module
