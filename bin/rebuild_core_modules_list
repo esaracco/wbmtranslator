@@ -5,6 +5,9 @@
 # It rebuild both webmin/usermin core-modules database for internal use.
 # 
 
+# -> http://www.webmin.com/standard.html and
+#    http://www.webmin.com/ustandard.html ?
+
 use LWP::UserAgent;
 use Cwd;
 use strict;
@@ -27,5 +30,5 @@ if ($r->is_success)
 }
 
 open (DEST, '>', "$localpath/$file-core-modules.data");
-print DEST join("\n", keys (%mods));
+print DEST join("\n", sort keys (%mods));
 close (DEST);
