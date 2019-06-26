@@ -89,6 +89,6 @@ print qq(<p>);
 &icons_table (\@links, \@titles, \@icons);
 print qq(</p>);
 
-print qq(<hr>);
+print qq(<hr/>);
 &trans_footer ();
 &footer("/", $text{'index'});

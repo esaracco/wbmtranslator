@@ -244,7 +244,9 @@ if ($app ne '')
   {
     my $select = qq(<select name="lang">);
     foreach my $m (sort @trans)
-      {$select .= qq(<option value="$m">$m</option>\n);}
+    {
+      $select .= qq(<option value="$m">$m</option>\n);
+    }
     $select .= qq(</select>);
 
     my $target_select = qq(

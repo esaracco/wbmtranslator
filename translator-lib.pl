@@ -90,7 +90,7 @@ our $ref_lang = &trans_get_ref_lang ($in{'app'});
 #
 sub trans_get_ref_lang ( $ )
 {
-  my $app = shift || '';
+  my $app = shift;
 
   return (
       $app &&
@@ -114,7 +114,7 @@ sub trans_main_check_config ()
   my $ok = 0;
   my $msg = '';
 
-  if ($config{'trans_webmin'} != 1 && !%config_usermin)
+  if (!$config{'trans_webmin'} && !%config_usermin)
   {
     $msg = $text{'MSG_ERROR_USERMIN'};
   }
@@ -169,7 +169,7 @@ sub trans_trim_config ()
 {
  foreach $key (keys %config)
   {
-    $config{$key} =~ s/(^\s+|\s+$)//g;
+    $config{$key} =~ s/^\s+|\s+$//g;
   } 
 }
 
@@ -386,16 +386,16 @@ sub trans_get_items ( $ )
 
   &trans_char2ent ($path, 'work');
 
-  open (H, '<', $path);
-  foreach my $line (<H>)
+  open (FH, '<', $path);
+  foreach my $line (<FH>)
   {
     next if ($line =~ /^\s*#/);
     
     if ($line =~ /=/)
     {
       my ($name, $value) = split (/=/, $line, 2);
-      $name =~ s/(^\s+|\s+$)//g;
-      $value =~ s/(^\s+|\s+$)//g;
+      $name =~ s/^\s+|\s+$//g;
+      $value =~ s/^\s+|\s+$//g;
 
       next if ($name eq '' || $value eq '');
 
@@ -406,7 +406,7 @@ sub trans_get_items ( $ )
       $file{"$name"} .= $line;
     }
   }
-  close (H);
+  close (FH);
 
   &trans_char2ent ($path, 'html');
   
@@ -431,19 +431,17 @@ sub trans_get_items_static ( $ )
 
   &trans_char2ent ($path, 'work');
   
-  open (H, '<', $path);
-  foreach my $line (<H>)
+  open (FH, '<', $path);
+  foreach my $line (<FH>)
   {
-    next if 
-      $line =~ /^#/ ||
-      $line =~ /^\s+#/;
+    next if ($line =~ /^\s*#/);
       
     if ($line =~ /=/)
     {
       my %item = ();
       my ($name, $value) = split (/=/, $line, 2);
-      $name =~ s/(^\s+|\s+$)//g;
-      $value =~ s/(^\s+|\s+$)//g;
+      $name =~ s/^\s+|\s+$//g;
+      $value =~ s/^\s+|\s+$//g;
 
       next if ($name eq '' || $value eq '');
 
@@ -456,7 +454,7 @@ sub trans_get_items_static ( $ )
 #      $item{"$name"} .= $line;
 #    }
   }
-  close (H);
+  close (FH);
 
   &trans_char2ent ($path, 'html');
   
@@ -506,16 +504,16 @@ sub trans_build_cache ( $ $ $ $ $ )
   my %hash = ();
   my $wu = &trans_get_current_app ();
 
-  open (FD, '>', 
+  open (FH, '>', 
     "/$config{'trans_working_path'}/.translator/".
     "$remote_user/monitoring/$wu/fingerprints/${app}".(($basic)?'_lang':'').
     "-${type}_${lang}");
   %hash = &trans_get_items ($path);
   foreach my $key (keys %hash)
   {
-    print FD "$key=" . (&md5_hex ($hash{$key})) . "|#|$hash{$key}\n";
+    print FH "$key=" . (&md5_hex ($hash{$key})) . "|#|$hash{$key}\n";
   }
-  close (FD);
+  close (FH);
 }
 
 # trans_get_updated ( $ $ $ $ )
@@ -609,20 +607,18 @@ sub trans_get_array_updated ( $ $ $ )
   %hash_md5 = &trans_get_items ($path_md5);
   foreach my $key (keys %hash_md5)
   {
+    next if ($hash_lang{$key} eq '');
+
     my $md5_old = '';
     my $md5_new = '';
     my $string_old = '';
-
-    next if ($hash_lang{$key} eq '');
     
     $md5_new = &md5_hex ($hash_lang{$key});
     ($md5_old, $string_old) = (split (/\|#\|/, $hash_md5{$key}))[0,1];
     
     if ($md5_new ne $md5_old)
     {
-      my %hash = ();
-
-      %hash = (
+      my %hash = (
         'key' => $key,
 	'old' => $string_old,
 	'new' => $hash_lang{$key}
@@ -690,7 +686,7 @@ sub trans_get_unused ( $ $ $ )
     next if ($type eq 'config' && $key =~ /^line\d*/);
     my @array = split (/\n/, `$all_path{'grep'} "$key" $grep_string`);
 
-    if (not grep (/[\'|\"]$key[\'|\"]/, @array))
+    if (!grep (/[\'|\"]$key[\'|\"]/, @array))
     {
       $unused{$key} = $hash{$key};
 
@@ -725,20 +721,18 @@ sub trans_get_existing_translations ( \@ )
   my %hash = ();
 
   # list all languages for all modules
-  if (scalar (@app) == 0)
+  if (!@app)
   {
-    my @mlist = grep {&check_os_support($_)} &get_all_module_infos ();
-
-    foreach my $m (@mlist)
+    foreach my $m (grep {&check_os_support($_)} &get_all_module_infos ())
     {
       my $dir = $m->{'dir'};
       
-      opendir (DIR, &trans_get_path ($dir, 'lang/'));
-      foreach my $item (readdir (DIR)) 
+      opendir (DH, &trans_get_path ($dir, 'lang/'));
+      foreach my $item (readdir (DH)) 
       {
         $hash{$item} = '' if &trans_is_language ($item, 1);
       }
-      closedir (DIR);
+      closedir (DH);
     }
   }
   # just list all languages for a given module
@@ -746,12 +740,12 @@ sub trans_get_existing_translations ( \@ )
   {
     foreach my $mod (@app)
     {
-      opendir (DIR, &trans_get_path ($mod, 'lang/'));
-      foreach my $item (readdir (DIR)) 
+      opendir (DH, &trans_get_path ($mod, 'lang/'));
+      foreach my $item (readdir (DH)) 
       {
         $hash{$item} = '' if &trans_is_language ($item, 1);
       }
-      closedir (DIR);
+      closedir (DH);
     }
   }
 
@@ -805,34 +799,33 @@ sub get_languages_infos ( $ )
 sub trans_create_translation ( $ $ )
 {
   my ($lang, $app) = @_;
-  my $path = (&trans_get_path ()) . "/$app";
+  my $path = (&trans_get_path())."/$app";
   my @content = ();
 
-  $lang =~ s/(^\s+|\s+$)//g;
+  $lang =~ s/^\s+|\s+$//g;
 
   # bad
-  return 2 if not &trans_is_language ($lang); 
+  return 2 if (!&trans_is_language ($lang));
   # already exist
-  return 1
-    if (grep /^$lang$/, &trans_get_existing_translations ([$app]));
+  return 1 if (grep /^$lang$/, &trans_get_existing_translations ([$app]));
  
-  if ($config{'trans_webmin'} == 1)
+  if ($config{'trans_webmin'})
   {
     # config.info
-    if ((-f "$path/config.info") && (! -f "$path/config.info.$lang"))
+    if (-f "$path/config.info" && ! -f "$path/config.info.$lang")
     {
-      open (H, '>', "$path/config.info.$lang") && close (H);
+      open (FH, '>', "$path/config.info.$lang") && close (FH);
     }
     # lang
     if (! -f "$path/lang/$lang")
     {
-      open (H, '>', "$path/lang/$lang") && close (H);
+      open (FH, '>', "$path/lang/$lang") && close (FH);
     }
 
     # lang - Webmin module exception (2 languages files)
     if ($path =~ m|/webmin$| && ! -f "$root_directory/lang/$lang") 
     {
-      open (H, '>', "$root_directory/lang/$lang") && close (H)
+      open (FH, '>', "$root_directory/lang/$lang") && close (FH)
     }
   }
   else
@@ -840,36 +833,36 @@ sub trans_create_translation ( $ $ )
     # config.info
     if (-f "$path/uconfig.info" && ! -f "$path/uconfig.info.$lang")
     {
-      open (H, '>', "$path/uconfig.info.$lang") && close (H);
+      open (FH, '>', "$path/uconfig.info.$lang") && close (FH);
     }
     # lang
     make_path ("$path/ulang", {'chmod' => 700});
     if (! -f "$path/ulang/$lang")
     {
-      open (H, '>',"$path/ulang/$lang") && close (H);
+      open (FH, '>',"$path/ulang/$lang") && close (FH);
     }
   }
   
   # theme.info (for theme)
   if (&trans_is_theme ($app))
   {
-    open (H, '<', "$path/theme.info");
-    @content = <H>;
-    close (H);
+    open (FH, '<', "$path/theme.info");
+    @content = <FH>;
+    close (FH);
 
     if (!grep /^desc_$lang=/, @content)
     {
-      open (H, '>>', "$path/theme.info");
-      print H "desc_$lang=\n";
-      close (H);
+      open (FH, '>>', "$path/theme.info");
+      print FH "desc_$lang=\n";
+      close (FH);
     }
   }
   # module.info
   elsif (! -f "$path/module.info.$lang")
   {
-    open (H, '>', "$path/module.info.$lang");
-    print H "desc_$lang=\n";
-    close (H);
+    open (FH, '>', "$path/module.info.$lang");
+    print FH "desc_$lang=\n";
+    close (FH);
   }
   
   return 0;
@@ -885,10 +878,7 @@ sub trans_create_translation ( $ $ )
 #
 sub trans_is_theme ( $ )
 {
-  my $app = shift;
-  my $path = &trans_get_path ($app, 'theme.info');
-
-  return (-f $path);
+  return (-f &trans_get_path (shift, 'theme.info'));
 }
 
 # trans_is_language ( $ $ )
@@ -931,9 +921,7 @@ sub trans_is_language ( $ $ )
 # 
 sub trans_footer ()
 {
-  my $wbmtranslator_version = $module_info{'version'};
-
-  print qq(<p><i>wbmtranslator</i> <b>$wbmtranslator_version</b></p>);
+  print qq(<p><i>wbmtranslator</i> <b>$module_info{'version'}</b></p>);
 }
 
 # trans_archive_create ( $ $ \@ )
@@ -1051,7 +1039,7 @@ sub trans_archive_send_browser ( $ )
   my $file = shift;
   my $filename = $file;
   my $file = "/$config{'trans_working_path'}/.translator/$remote_user/archives/$file";
-  my $size = (stat ($file))[7];
+  my $size = -s $file;
   my $date = strftime ("%a, %d %b %Y %H:%M:%S", localtime);
  
   print qq(Content-Type: application/tar+gzip\n);
@@ -1072,9 +1060,9 @@ sub trans_archive_send_browser ( $ )
 
   print "\n";
 
-  open (H, '<', $file);
-  print <H>;
-  close (H);
+  open (FH, '<', $file);
+  print <FH>;
+  close (FH);
 }
 
 # trans_archive_delete ( $ )
@@ -1100,18 +1088,22 @@ sub trans_archive_list_content ( $ )
 {
   my $filename = shift;
 
-  open (H, "$all_path{'tar'} -ztf /$config{'trans_working_path'}/".
+  open (FH, "$all_path{'tar'} -ztf /$config{'trans_working_path'}/".
            ".translator/$remote_user/archives/$filename |");
-  while (my $line = <H>)
+  while (my $line = <FH>)
   {
     my $color = 'green';
     
     if ($line =~ /\/(lang|ulang|help)\//)
     {
       if ($line =~ /\/help\//)
-        {$color = 'brown';}
+      {
+        $color = 'brown';
+      }
       elsif ($line =~ /\/(lang|ulang)\//)
-        {$color = 'orange';}
+      {
+        $color = 'orange';
+      }
 
       $line =~ 
         s/^(.*)\/(.*)\/(.*)$/
@@ -1122,9 +1114,13 @@ sub trans_archive_list_content ( $ )
     else
     {
       if ($line =~ /config\.info/)
-        {$color = 'purple';}
+      {
+        $color = 'purple';
+      }
       elsif ($line =~ /module\.info/)
-        {$color = 'gray';}
+      {
+        $color = 'gray';
+      }
 	
       $line =~ 
         s/^(.*)\/(.*)$/
@@ -1133,7 +1129,7 @@ sub trans_archive_list_content ( $ )
     }
     print "$line<br>\n";
   }
-  close (H);
+  close (FH);
 }
 
 # trans_has_command ( $ )
@@ -1162,7 +1158,7 @@ sub trans_has_command
   
   foreach my $item (@path)
   {
-    return $item if (-e $item . $exe);
+    return $item if (-e $item.$exe);
   }
 
   return '';
@@ -1177,14 +1173,14 @@ sub trans_has_command
 sub trans_init_all_path
 {
   my @exe = (
-    'chmod',
     'grep',
-    'mv',
     'tar'
   );
   
   foreach my $item (@exe)
-    {$all_path{$item} = &trans_has_command ($item) . $item;}
+  {
+    $all_path{$item} = &trans_has_command($item).$item;
+  }
 }
 
 # trans_archive_send ( $ $ $ $ $ \@ $ )
@@ -1206,7 +1202,6 @@ sub trans_archive_send ( $ $ $ $ $ \@ $ )
   my $usermin_version = &usermin::get_usermin_version ();
   my $version = ($config{'trans_webmin'}) ? $webmin_version : $usermin_version;
   my @app = @$array;
-  my $filename = $file;
   my $subject = '';
   my $message = '';
   my $mods_list = '';
@@ -1216,7 +1211,7 @@ sub trans_archive_send ( $ $ $ $ $ \@ $ )
   my $mail = undef;
   my $mtype = ($config{'trans_webmin'}) ? 'Webmin' : 'Usermin';
 
-  $body =~ s/(^\s+|\s+$)//g;
+  $body =~ s/^\s+|\s+$//g;
   
   foreach my $mod (@app) {$mods_list .= "$mod, "}
   $mods_list =~ s/\, $//g;
@@ -1229,7 +1224,7 @@ sub trans_archive_send ( $ $ $ $ $ \@ $ )
   $message .= qq(Translator : $sender_name <$from>\n);
   $message .= sprintf qq(Module(s) : $mods_list\n);
   $message .= sprintf qq(Language(s) : %s\n), ($lang eq '') ? 'All' : $lang;
-  $message .= qq(Archive name : $filename\n);
+  $message .= qq(Archive name : $file\n);
   $message .= sprintf qq(Module(s) type : %s\n),
     (&trans_is_webmin_module ($app[0])) ? 
       "Core $mtype module(s)" : "Not Core $mtype module(s)";
@@ -1273,10 +1268,7 @@ sub trans_archive_send ( $ $ $ $ $ \@ $ )
       });
     }
 
-    if ($Mail::Sender::Error)
-    {
-      return (0, $Mail::Sender::Error);
-    }
+    return (0, $Mail::Sender::Error) if ($Mail::Sender::Error);
 
     $m->MailFile ({
       to => $to,
@@ -1285,10 +1277,7 @@ sub trans_archive_send ( $ $ $ $ $ \@ $ )
       file => "/$config{'trans_working_path'}/.translator/$remote_user/archives/$file"
     });
   
-    if ($Mail::Sender::Error)
-    {
-      return (0, $Mail::Sender::Error);
-    }
+    return (0, $Mail::Sender::Error) if ($Mail::Sender::Error);
   }
   # use mailboxes settings
   else
@@ -1296,10 +1285,10 @@ sub trans_archive_send ( $ $ $ $ $ \@ $ )
     my $mail = undef;
     my $attach = '';
     
-    open (H, '<', "/$config{'trans_working_path'}/.translator/".
+    open (FH, '<', "/$config{'trans_working_path'}/.translator/".
                   "$remote_user/archives/$file");
-    foreach (<H>) {$attach .= $_}
-    close (H);
+    foreach (<FH>) {$attach .= $_}
+    close (FH);
     
     $mail = { 
       'headers' => [ 
@@ -1422,9 +1411,9 @@ sub trans_char2ent ( $ $ )
                &trans_ent2char_buffer ($src) :
                &trans_char2ent_buffer ($src);
 
-  open (H, '>', $path);
-  print H $dest;
-  close (H);
+  open (FH, '>', $path);
+  print FH $dest;
+  close (FH);
 }
 
 # trans_ent2char_buffer ( $ )
@@ -1470,8 +1459,8 @@ sub trans_get_module_version ( $ )
 
   return '' if ($app eq '');
 
-  open (H, '<', &trans_get_path ($app, "$finfo.info"));
-  while (<H>)
+  open (FH, '<', &trans_get_path ($app, "$finfo.info"));
+  while (<FH>)
   {
     my ($name, $value) = split (/=/);
     
@@ -1482,7 +1471,7 @@ sub trans_get_module_version ( $ )
       last;
     }
   }
-  close (H);
+  close (FH);
 
   return $ret;
 }
@@ -1501,7 +1490,10 @@ sub trans_check_perl_deps ()
     
   print qq($text{'PERL_DEPS_ERROR'});
   print qq(<ul>);
-  foreach my $mod (@perl_deps) {print qq(<li><b>$mod</b></li>\n);}
+  foreach my $mod (@perl_deps)
+  {
+    print qq(<li><b>$mod</b></li>\n);
+  }
   print qq(</ul><hr>);
 }
 
@@ -1527,7 +1519,7 @@ sub trans_get_translation_filename ( \@ $ )
   {
     my $module_version = &trans_get_module_version ($app[0]);
     
-    $suffix .= ($config{'trans_webmin'} == 1) ?
+    $suffix .= ($config{'trans_webmin'}) ?
       ($module_version eq $webmin_version) ?
         $app[0] . '_' : $app[0] . "-${module_version}_" :
       ($module_version eq $usermin_version) ?
@@ -1539,7 +1531,7 @@ sub trans_get_translation_filename ( \@ $ )
   }
 
   $suffix =~ s/\_$/-/;
-  $suffix = ($config{'trans_webmin'} == 1) ?
+  $suffix = ($config{'trans_webmin'}) ?
     "webmin-${webmin_version}-$suffix" : 
     "usermin-${usermin_version}-$suffix";
   
@@ -1644,10 +1636,10 @@ sub trans_modules_list_get_options ( \@ $ )
 {
   my ($array, $module_type) = @_;
   my @app = @$array;
-  my @mlist = sort { $a->{'dir'} cmp $b->{'dir'} }
-    grep { &check_os_support($_) } &trans_get_all_module_infos ();
   
-  foreach my $m (@mlist)
+  foreach my $m (
+    sort { $a->{'dir'} cmp $b->{'dir'} }
+      grep { &check_os_support($_) } &trans_get_all_module_infos ())
   {
     next if (
       $module_type eq 'core' && !&trans_is_webmin_module ($m->{'dir'}) ||
@@ -1673,11 +1665,8 @@ sub trans_lang_must_be_encoded ( $ )
 
   foreach my $l (@langs)
   {
-    if ($l->{'lang'} eq $lang)
-    {
-      return 1 if ($l->{'charset'} eq '' ||
-                   $l->{'charset'} =~ /iso-8859-1/)
-    }
+    return 1 if ($l->{'lang'} eq $lang &&
+                 ($l->{'charset'} eq '' || $l->{'charset'} =~ /iso-8859-1/));
   }
 
   return 0;
@@ -1710,9 +1699,9 @@ sub trans_get_user_var_hash ( $ )
   my $name = shift;
   my %ret = ();
 
-  open (H, '<', "/$config{'trans_working_path'}/.translator/".
+  open (FH, '<', "/$config{'trans_working_path'}/.translator/".
                 "$remote_user/user_vars") || return '';
-  while (my $line = <H>) 
+  while (my $line = <FH>) 
   {
     my ($n, $v) = split (/=/, $line);
     
@@ -1721,7 +1710,7 @@ sub trans_get_user_var_hash ( $ )
       $ret{$1} = $v;
     }
   }
-  close (H);
+  close (FH);
 
   return %ret;
 }
@@ -1737,9 +1726,9 @@ sub trans_get_user_var ( $ )
   my $name = shift;
   my $ret = '';
 
-  open (H, '<', "/$config{'trans_working_path'}/.translator/".
+  open (FH, '<', "/$config{'trans_working_path'}/.translator/".
                 "$remote_user/user_vars") || return '';
-  while (my $line = <H>) 
+  while (my $line = <FH>) 
   {
     my ($n, $v) = split (/=/, $line);
     if ($n eq $name)
@@ -1748,7 +1737,7 @@ sub trans_get_user_var ( $ )
       last;
     }
   }
-  close (H);
+  close (FH);
 
   return $ret;
 }
@@ -1783,27 +1772,27 @@ sub trans_set_user_var ( $ $ )
     }
   }
   
-  if (open (H, '<', "/$config{'trans_working_path'}/.translator/".
-                    "$remote_user/user_vars"))
+  if (open (FH, '<', "/$config{'trans_working_path'}/.translator/".
+                     "$remote_user/user_vars"))
   {
-    while (my $line = <H>) 
+    while (my $line = <FH>) 
     {
       my ($n, $v) = split (/=/, $line);
       chomp ($v);
       $hash{$n} = $v;
     }
-    close (H);
+    close (FH);
   }
 
   $hash{$name} = $value;
 
-  open (H, '>', "/$config{'trans_working_path'}/.translator/".
-                "$remote_user/user_vars");
+  open (FH, '>', "/$config{'trans_working_path'}/.translator/".
+                 "$remote_user/user_vars");
   while (my ($k, $v) = each (%hash))
   {
-    print H "$k=$v\n";
+    print FH "$k=$v\n";
   }
-  close (H);
+  close (FH);
 }
 
 # trans_monitor_panel ( $ )
@@ -1821,15 +1810,15 @@ sub trans_monitor_panel ( $ )
   
   printf qq(
     <p>
-    <table style="background: silver;font-size: 10px;font-family: Verdana, Arial, Helvetica, sans-serif;color: black;border: 2px green solid;"><tr><td>
+    <table style="background:silver;font-size:10px;font-family:Verdana,Arial,Helvetica,sans-serif;color:black;border:2px green solid;"><tr><td>
     $text{'MONITOR_MODULE'} 
     <input type="radio" id='m1' name="monitor" onChange="submit()" value="1"%s><label for='m1'>&nbsp;$text{'YES'}</label>
     <input type="radio" id='m2' name="monitor" onChange="submit()" value="0"%s><label for='m2'> $text{'NO'}</label>
     </td></tr></table>
     </p>
   ),
-  ($monitor == 1) ? ' checked="checked"' : '',
-  ($monitor == 0) ? ' checked="checked"' : '';
+  ($monitor) ? ' checked="checked"' : '',
+  (!$monitor) ? ' checked="checked"' : '';
 }
 
 # trans_monitor_news ()
@@ -1939,7 +1928,7 @@ sub trans_monitor_news ()
 #
 sub trans_get_all_module_infos ()
 {
-  return ($config{'trans_webmin'} == 1) ?
+  return ($config{'trans_webmin'}) ?
     (&webmin::list_themes (), &get_all_module_infos ()) :
     (&usermin::list_themes (), &usermin::list_modules ());
 }
@@ -1959,12 +1948,12 @@ sub trans_get_path ( $ $ $ )
   
   if ($app eq '' && $file eq '')
   {
-    $path = ($config{'trans_webmin'} == 1) ?
+    $path = ($config{'trans_webmin'}) ?
       $root_directory : $config_usermin{'root'};
   }
   else
   {
-    if ($config{'trans_webmin'} == 1)
+    if ($config{'trans_webmin'})
     {
       $path = ($basic) ? "$root_directory/$file": "$root_directory/$app/$file";
     }
@@ -1994,7 +1983,7 @@ sub trans_get_path ( $ $ $ )
 #
 sub trans_get_current_app ()
 {
-  return ($config{'trans_webmin'} == 1) ? 'webmin' : 'usermin';
+  return ($config{'trans_webmin'}) ? 'webmin' : 'usermin';
 }
 
 # trans_init_all_core_modules ()
@@ -2006,14 +1995,14 @@ sub trans_get_current_app ()
 sub trans_init_all_core_modules ()
 {
   my @all_modules = ();
-  my $type = ($config{'trans_webmin'} != 1) ? 'usermin' : 'webmin';
+  my $type = &trans_get_current_app ();
   
-  open (H, '<', "data/$type-core-modules.data");
-  while (<H>)
+  open (FH, '<', "data/$type-core-modules.data");
+  while (<FH>)
   {
     push @all_modules, $_;
   }
-  close (H);
+  close (FH);
 
   return @all_modules;
 }
@@ -2044,10 +2033,9 @@ sub trans_init_translate_popup_langs ( $ $ )
 sub trans_debug ( $ )
 {
   use Data::Dumper;
-  my $data = shift;
-  open(H,'>>','/tmp/trans_debug.log');
-  print H Dumper($data)."\n";
-  close(H);
+  open (FH, '>>', '/tmp/trans_debug.log');
+  print FH Dumper(shift)."\n";
+  close(FH);
 }
 #
 #################

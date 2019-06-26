@@ -32,7 +32,6 @@ my $suffix = '';
 my $size = 0;
 my $size_print = 0;
 my $file = &trans_get_translation_filename (\@array_app, $lang);
-my $filename = $file;
 my $hid_mods = '';
 my $error = '';
 
@@ -48,14 +47,14 @@ if ($in{'download'} ne '')
   exit;
 }
 # create the file
-elsif (not $in{'send'})
+elsif (!$in{'send'})
 {
   &trans_archive_create ($file, $lang, \@array_app);
 }
 #
 ########################
 
-$size = (stat ("/$config{'trans_working_path'}/.translator/$remote_user/archives/$file"))[7];
+$size = -s "/$config{'trans_working_path'}/.translator/$remote_user/archives/$file";
 $size_print = &trans_get_string_from_size ($size);
 
 # send the email
@@ -96,7 +95,7 @@ printf qq(
   <table border=1>
   <tr><td $cb>$text{'SENDER_NAME'}:</td><td><input size="60" type="text" name="sender_name" value="%s"></td></tr>
   <tr><td $cb>$text{'RECIPIENT'}:</td><td>$email_print</td></tr>
-  <tr><td $cb>$text{'FILENAME'}:</td><td>$filename</td></tr>
+  <tr><td $cb>$text{'FILENAME'}:</td><td>$file</td></tr>
   <tr><td $cb>$text{'FILESIZE'}:</td><td>$size_print</td></tr>
   <tr><td $cb colspan="2" align="center"><b>$text{'EMAIL_BODY'}</b></td></tr>
   <tr><td colspan="2" align="center"><textarea name="body" rows="10" cols="80">%s</textarea></td></tr>

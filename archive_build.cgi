@@ -50,7 +50,7 @@ elsif (not $in{'send'})
 #
 ########################
 
-$size = (stat ("/$config{'trans_working_path'}/.translator/$remote_user/archives/$file"))[7];
+$size = -s "/$config{'trans_working_path'}/.translator/$remote_user/archives/$file";
 $size_print = &trans_get_string_from_size ($size);
 
 &header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, undef, 1, 0);
