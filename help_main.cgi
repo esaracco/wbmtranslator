@@ -91,28 +91,22 @@ print &my_get_msg ();
 # if a module have been chosen
 if ($app ne '')
 {
-  my $updated = 0;
   my $path = &trans_get_path ($app, 'help');
-  my %files = ();
   my $form_name = 0;
-  my %hash_usermin = ();
-  my @lang_array = ();
+  my @files = ();
 
   # retrieve all files for this module
-  opendir (DIR, "$path");
-  foreach my $item (readdir (DIR))
+  opendir (DH, $path);
+  foreach my $item (readdir (DH))
   {
-    next if ($item !~ /^.*\.html$/);
-      
-    if ($config{'trans_webmin'} != 1)
-      {if ($item =~ /^([^.]+)\.([^.]+)\./) {$hash_usermin{$2} = ''}}
-      
-    if ($item =~ /^([^.]+)\./) {push @{$files{"$1.html"}}, $item}
+    push (@files, $item) if ($item =~ /^[^\.]+.html$/);
   }
-  closedir (DIR);
+  closedir (DH);
  
-  if (%files)
+  if (@files)
   {
+    my @lang_array = &trans_get_existing_translations ([$app]);
+
     print qq(<p>$text{'HELP_DESCRIPTION2'}</p>);
 
     # display translation table for the selected module
@@ -131,28 +125,22 @@ if ($app ne '')
       </tr>
     );
 
-    @lang_array = ($config{'trans_webmin'} != 1) ?
-      sort keys %hash_usermin : sort &trans_get_existing_translations ([$app]);
-
-    foreach my $key (sort keys %files)
+    foreach my $key (sort (@files))
     {
-      my $line = '';
-      my @array = @{$files{$key}};
       my ($size, $modified) = (stat ("$path/$key"))[7,9];
       my $to_translate = 0;
       my $not_translated = 0;
       my $state_icon = '';
 
-      $line = sprintf qq(
-	  <td>%s</td>
-          <td>%s</td>
-          <td>%s</td>
-	  <td>
-	  <select name="select_file$form_name">
-      ),
-      $key,
-      &trans_get_string_from_size ($size),
-      strftime ("%Y-%m-%d", localtime ($modified));
+      my $line = sprintf qq(
+                   <td>%s</td>
+                   <td>%s</td>
+                   <td>%s</td>
+                   <td><select name="select_file$form_name">
+                 ),
+                 $key,
+                 &trans_get_string_from_size ($size),
+                 strftime ("%Y-%m-%d", localtime ($modified));
 
       foreach my $item (@lang_array)
       {
@@ -162,10 +150,11 @@ if ($app ne '')
 	my $size1 = 0;
 	my $modified1 = '';
 
-        $key =~ /^(.*)\.htm/; $file = "$1.$item.html";
+        $key =~ /^(.*)\.htm/;
+        $file = "$1.$item.html";
         ($size1, $modified1) = (stat ("$path/$file"))[7,9];
 	
-	if ((! -f "$path/$file") or ($size1 == 0))
+	if ((! -f "$path/$file") || (!$size1))
 	{
           $state = '[!] - ';
 	  $not_translated++;
@@ -173,11 +162,11 @@ if ($app ne '')
 	else
 	{
 	  if (Date_Cmp (
-	    strftime ("%Y-%m-%d", localtime ($modified1)), 
-	    strftime ("%Y-%m-%d", localtime ($modified))) < 0)
+                strftime ("%Y-%m-%d", localtime ($modified1)), 
+                strftime ("%Y-%m-%d", localtime ($modified))) < 0)
 	  {
 	    $state = '[X] - ';
-	    $to_translate++;
+	    ++$to_translate;
 	  };
 
         }
@@ -185,32 +174,34 @@ if ($app ne '')
                          ($item eq $current_lang) ? 'selected="selected"':'');
       }
 
-      $line .= sprintf qq(</select></td>
-	<td>%s</td>
-	<td>%s</td>
-        <td align="center"><a href="javascript:go_to('$key', 'select_file$form_name')"><img src="images/edit.png" alt="$text{'EDIT'}" title="$text{'EDIT_SELECTION'}" border=0></a></td>
-        </tr>
-      ), 
-      ($not_translated == 0) ?
-        qq(<img src="images/ok.png">) :
-	qq(<img src="images/bad.png"> $not_translated),
-      ($to_translate == 0) ?
-        qq(<img src="images/ok.png">) :
-	qq(<img src="images/bad.png"> $to_translate);
+      $line .= sprintf qq(
+                 </select></td>
+                 <td>%s</td>
+                 <td>%s</td>
+                 <td align="center"><a href="javascript:go_to('$key', 'select_file$form_name')"><img src="images/edit.png" alt="$text{'EDIT'}" title="$text{'EDIT_SELECTION'}" border=0></a></td>
+                 </tr>
+               ),
+              ($not_translated == 0) ?
+                qq(<img src="images/ok.png">) :
+                qq(<img src="images/bad.png"> $not_translated),
+              ($to_translate == 0) ?
+                qq(<img src="images/ok.png">) :
+                qq(<img src="images/bad.png"> $to_translate);
 
-      $state_icon = ($to_translate == 0 and $not_translated == 0) ?
-        qq(<img src="images/smiley_ok.png" alt="$text{'GOOD'}"
-          title="$text{'GOOD'}">) :
-        ($to_translate != 0 and $not_translated != 0) ?
-	  qq(<img src="images/smiley_bad.png" alt="$text{'BAD'}"
-            title="$text{'BAD'}">) :
-	  qq(<img src="images/smiley_notbad.png" alt="$text{'NOT_SO_BAD'}"
-            title="$text{'NOT_SO_BAD'}">);
+              $state_icon =
+                (!$to_translate && !$not_translated) ?
+                  qq(<img src="images/smiley_ok.png" alt="$text{'GOOD'}"
+                     title="$text{'GOOD'}">) :
+                  ($to_translate && $not_translated) ?
+                    qq(<img src="images/smiley_bad.png" alt="$text{'BAD'}"
+                       title="$text{'BAD'}">) :
+                    qq(<img src="images/smiley_notbad.png"
+                       alt="$text{'NOT_SO_BAD'}" title="$text{'NOT_SO_BAD'}">);
       
       $line = "<tr $cb><td>$state_icon</td>$line";
       print $line;
 
-      $form_name++;
+      ++$form_name;
     }
     print qq(</table>);
     print qq(<p><font size="-1">$text{'HELP_LEGEND'}</font></p>);
@@ -224,5 +215,5 @@ if ($app ne '')
 print qq(</form>);
 print qq(</p>);
 
-print qq(<hr>);
-&footer("", $text{'MODULE_INDEX'});
+print qq(<hr/>);
+&footer ('', $text{'MODULE_INDEX'});
