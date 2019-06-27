@@ -8,7 +8,7 @@ wbmtranslator is the translation assistant for [Webmin](http://www.webmin.com) /
 
 ## Installation
 ### From a wbm archive :
-Open the Webmin modules manager and upload the wbmclamav file.
+Open the Webmin modules manager and upload the wbmtranslator file.
 ### From the Git repository :
 
 1. Change the owner and permissions of the entire tree :
