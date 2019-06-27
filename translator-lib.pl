@@ -18,7 +18,7 @@
 
 use utf8;
 
-do '../web-lib.pl';
+use WebminCore;
 &init_config();
 
 # to translate usermin

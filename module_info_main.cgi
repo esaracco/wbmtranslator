@@ -216,8 +216,8 @@ if ($app ne '')
   # read dedicated module.info file per language if some
   if ($finfo eq 'module')
   {
-    opendir (DIR, "$path/");
-    foreach my $item (readdir (DIR))
+    opendir (DH, "$path/");
+    foreach my $item (readdir (DH))
     {
       if ($item =~ /^$finfo.info\./)
       {
@@ -228,13 +228,13 @@ if ($app ne '')
 
       }
     }
-    closedir (DIR);
+    closedir (DH);
   }
 
   # Check for missed languages (sometimes there is more languages in lang/ 
   # than in module.info/theme.info)
-  opendir (DIR, "$path/lang/");
-  foreach my $item (readdir (DIR))
+  opendir (DH, "$path/lang/");
+  foreach my $item (readdir (DH))
   {
     if ($item ne $ref_lang && &trans_is_language ($item))
     {
@@ -242,7 +242,7 @@ if ($app ne '')
       $hash_long{$item} = '' if (!exists ($hash_long{$item}));
     }
   }
-  closedir (DIR);
+  closedir (DH);
 
   &trans_display_description_table ('desc', 
                                     $text{'MODULE_CONFIG_SHORT_DESCRIPTION3'},
