@@ -1,4 +1,4 @@
-<p align="center"><img src="http://wbmtranslator.esaracco.fr/images/wbmtranslator.png"/></p>
+<p align="center"><img src="https://wbmtranslator.esaracco.fr/images/wbmtranslator.png"/></p>
 
 # wbmtranslator
 
