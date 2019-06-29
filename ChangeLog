@@ -1,3 +1,17 @@
+2019-06-29 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
+
+	* Version: 0.8.1
+
+	* Help translation section:
+
+	  - Removed unused feature.
+
+	* Other:
+
+	  - Logo update.
+	  - Project links update.
+	  - HTML fixes and code cleaning.
+
 2019-06-05 Emmanuel Saracco <emmanuel@esaracco.fr>
 
 	* wbmtranslator is now hosted on GitHub.
