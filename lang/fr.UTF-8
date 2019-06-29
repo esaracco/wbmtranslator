@@ -170,7 +170,6 @@ MODULE_CONFIG_TITLE=[<code>%s</code>] Traduction de la configuration (<code>conf
 FOUND_UNUSED_ITEMS=<b>%s</b> élément(s) inutilisé(s) trouvé(s)
 ITEMS=Eléments
 MENU_ADMIN_MAIN_GO=Aller à la page de Création/Administration des traductions
-HELP_TEXTAREA_MORE=Allonger les zones de texte
 MENU_HELP_MAIN_GO=Aller à la page de traduction de l'aide (help/)
 ONLY_UMODULE_INFO=module.info/theme.info (Usermin)
 SEND_BUILD_DESCRIPTION=Vous pouvez soit envoyer le fichier suivant sur l'adresse E-Mail suivante, ou bien le télécharger et l'envoyer vous-même.

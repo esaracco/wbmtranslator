@@ -47,7 +47,6 @@ HELP_INDEX='オンラインヘルプ'の翻訳 (<code>help/<code>)
 HELP_LEGEND=[!] = 翻訳する, [X] = 更新する
 HELP_NOEXIST=このモジュールにはオンラインヘルプがありません (ディレクトリ <code>help</code> にHTMLファイルが格納されていません).
 HELP_TEXTAREA_LESS=テキストエリアを縮小する
-HELP_TEXTAREA_MORE=テキストエリアを拡張する
 HELP_TITLE=[<code>%s</code>] 'オンラインヘルプ' の翻訳 (<code>help/</code>)
 IMPORTANT_NOTICE=ダブルワークを防ぐため、最新の開発版Webminを翻訳してください。もしあなたが翻訳したものをWebmin-Translators-Teamに送るつもりであるなら、正式なもの以外は何の返事もなく拒否されます。
 IN=に

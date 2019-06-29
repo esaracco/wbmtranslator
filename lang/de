@@ -179,7 +179,6 @@ EDIT_TRANSLATION_FILE=Bearbeite die '%s' Übersetzungsdatei
 ALL_WEBMIN_TRANSLATION=Komplette Webmin-Übersetzung
 FORM_TITLE_W=Für Webmin-Module
 DOWNLOAD=Herunterladen
-HELP_TEXTAREA_MORE=Vergrößere Texträume
 HELP_TITLE=[<code>%s</code>] 'Online Hilfe' Übersetzung (<code>help/</code>)
 ONLY_UCONFIG_INFO=config.info (Usermin)
 ALL_USERMIN_TRANSLATION=Komplette Usermin-Übersetzung

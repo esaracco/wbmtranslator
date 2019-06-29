@@ -195,5 +195,4 @@ EDIT_TRANSLATION_FILE=Modifica la traduzione '%s'
 ALL_WEBMIN_TRANSLATION=Tutta la traduzione di Webmin
 FORM_TITLE_W=Per i moduli <i style="background:blue;color:yellow;"> Webmin </i>
 DOWNLOAD=Download
-HELP_TEXTAREA_MORE=Allarga i campi di testo
 HELP_TITLE=[<code>%s</code>] Traduzione delle pagine di aiuto dei moduli

@@ -70,7 +70,6 @@ MSG_ERROR_USERMIN=모듈 설정에서 Usermin 번역을 선택했지만, Usermin
 NO_LANGUAGES=이 모듈에 대한 언어 파일이 없습니다.
 LINK_HELP_PAGE='온라인 도움말' 변역 (<code>help/</code>)
 MENU_ADMIN_MAIN_GO=모듈과 번역 선택/관리 페이지로 이동
-HELP_TEXTAREA_MORE=textarea 늘리기
 MENU_HELP_MAIN_GO='온라인 도움말' 번역 (help /) 페이지로 이동
 ONLY_UMODULE_INFO=module.info (Usermin)
 SEND_BUILD_DESCRIPTION=다음의 이메일 주소로 다음 파일을 전송하거나 또는 직접 다운로드 받아서 전송할 수 있습니다.

@@ -197,7 +197,6 @@ MSG_REMOVED_ALL_LOG_ENTRIES=Wpisy logowania zosta³y skasowane z pliku t³umaczeni
 PREVIOUS=poprzedniej strony
 REMOVE_TRANSLATION_DESCRIPTION_USERMIN=T³umaczenie <code>%s</code> (<code>ulang/</code>) i wszystkie powi±zane pozycje (<code>uconfig.info.%s</code> i "<code>desc_%s</code>" w <code>module.info</code> Usermina) zostanie usuniête dla modu³u <code>%s</code>. <p>Jeste¶ pewien, ¿e tego chcesz??</p>
 DOWNLOAD=Pobierz
-HELP_TEXTAREA_MORE=Zwiêksz pola tekstowe
 HELP_TITLE=[<code>%s</code>] T³umaczenie 'Pomocy Online' (<code>help/</code>)
 EDIT_TRANSLATION_FILE=Edytuj plik t³umaczenia '%s'
 ALL_WEBMIN_TRANSLATION=Wszystkie t³umaczenia Webmina

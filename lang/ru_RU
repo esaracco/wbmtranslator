@@ -155,7 +155,6 @@ MSG_NEW_TRANSLATION_EXIST=Языковой файл <code>%s</code> для модуля <code>%s</cod
 REMOVED_FROM_TRANSLATION_FILE=Удалить из языкового файла
 HELP_INDEX=переводчику онлайн справки (<code>help/</code)
 HELP_TITLE=[<code>%s</code>] Перевод онлайн справки (<code>help/</code>)
-HELP_TEXTAREA_MORE=Увеличить область редактирования
 DOWNLOAD=Скачать
 FORM_TITLE_W=Модули Webmin
 ALL_WEBMIN_TRANSLATION=Все переводы Webmin

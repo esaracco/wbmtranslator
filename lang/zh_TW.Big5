@@ -59,7 +59,6 @@ HELP_INDEX='線上協助' 翻譯 (<code>help/<code>)
 HELP_LEGEND=[!] = 要翻譯, [X] = 要更新
 HELP_NOEXIST=此模組無線上協助( <code>help</code>字典不存在或是無HTML檔案).
 HELP_TEXTAREA_LESS=縮小文字區塊
-HELP_TEXTAREA_MORE=增加文字區塊
 HELP_TITLE=[<code>%s</code>] '線上協助' 翻譯 (<code>help/</code>)
 IMPORTANT_NOTICE=請注意<b>請翻譯最新的Webmin開發版本</b> 避免重複工作，如果您打算正式傳送您的更新檔到Webmin翻譯團隊，沒有任何備註的檔案可能被拒絕
 IN=在

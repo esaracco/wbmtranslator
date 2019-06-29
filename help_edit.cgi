@@ -24,9 +24,6 @@ my $app = $in{'app'};
 my $f1 = $in{'f1'}; $f1 =~ s/[^a-z0-9\-_\.]+//gi;
 my $f2 = $in{'f2'}; $f2 =~ s/[^a-z0-9\-_\.]+//gi;
 my $content = $in{'content'};
-my $more = ($in{'more'} ne '');
-my $less = ($in{'less'} ne '');
-my $rows = $in{'rows'};
 my $path = &trans_get_path ($app, 'help');
 my $msg = '';
 
@@ -34,11 +31,6 @@ my @tmp = split (/\./, $f2);
 my $lang = ($#tmp == 2) ? $tmp[1] : $tmp[1].'.'.$tmp[2];
 
 $lang ||= $current_lang;
-
-# manage textareas size
-$rows = 20 if ($rows eq '');
-$rows += 5 if ($more);
-$rows -= 5 if ($less);
 
 ##### POST actions #####
 #
@@ -82,15 +74,12 @@ print qq(<form action="help_edit.cgi" method="post">);
 print qq(<input type="hidden" name="f1" value="$f1">);
 print qq(<input type="hidden" name="f2" value="$f2">);
 print qq(<input type="hidden" name="app" value="$app">);
-print qq(<input type="hidden" name="rows" value="$rows">);
 
 print qq(<p><b>$msg</b></p>) if ($msg ne '');
 
 print qq(<table border=0 cellspacing=2 cellpadding=2>);
-print qq(<tr><td><input type="submit" name="more" value="$text{'HELP_TEXTAREA_MORE'}">&nbsp;<input type="submit" name="less" value="$text{'HELP_TEXTAREA_LESS'}"></td></tr>);
-print qq(<tr><td>&nbsp;</td></tr>);
 print qq(<tr><th $tb>$text{'HELP_CONTENT1'}&nbsp;$lang</th></tr>);
-print qq(<tr><td><textarea rows="$rows" cols="110" style="color:blue;background:silver">);
+print qq(<tr><td><textarea rows="20" cols="110" style="color:blue;background:silver">);
 
 # this file is intended to be in english, so no need to
 # encode/decode it (our "modified" detection method is based on
@@ -101,7 +90,7 @@ print qq(</textarea></td></tr>);
 print qq(<tr><td>&nbsp;</td></tr>);
 
 print qq(<tr><th $tb>$text{'HELP_CONTENT2'}</th></tr>);
-print qq(<tr><td><textarea rows="$rows" cols="110" name="content">);
+print qq(<tr><td><textarea rows="20" cols="110" name="content">);
 &trans_char2ent ("$path/$f2", 'work');
 open (H, '<', "$path/$f2"); print $_ while (<H>); close (H);
 &trans_char2ent ("$path/$f2", 'html');

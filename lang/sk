@@ -61,7 +61,6 @@ MSG_NEW_TRANSLATION_EXIST=Zadaný jazyk <code>%s</code> u¾ existuje v module <cod
 HELP_CONTENT2=Preklad
 HELP_TITLE=[<code>%s</code>] Preklad nápovedy (<code>help/</code>)
 DOWNLOAD=Stiahnu»
-HELP_TEXTAREA_MORE=Zväè¹i» textovú oblas»
 EDIT_TRANSLATION_FILE=Upravi» súbor s prekladom '%s'
 FORM_TITLE_W=Moduly Webminu
 ALL_WEBMIN_TRANSLATION=V¹etky preklady Webminu

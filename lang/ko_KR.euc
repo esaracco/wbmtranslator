@@ -59,7 +59,6 @@ HELP_INDEX='온라인 도움말' 번역 (<code>help/<code>)
 HELP_LEGEND=[!] = 번역할 것, [X] = 제거할 것
 HELP_NOEXIST=이 모듈은 온라인 도움말을 가지고 있지 않습니다. (<code>help</code> 디렉토리가 없거나 HTML 파일을 포함하고 있지 않습니다.)
 HELP_TEXTAREA_LESS=textarea 줄이기
-HELP_TEXTAREA_MORE=textarea 늘리기
 HELP_TITLE=[<code>%s</code>] '온라인 도움말' 번역 (<code>help/</code>)
 IMPORTANT_NOTICE=중복된 작업을 피하기 위하여, <b>Webmin의 최종 개발 버전만</b> 번역을 해 주시기 바랍니다. 만약 당신이 공식적인 웹민-번역-팀에 업데이트를 전송하였더라도, 아무런 고지 없이 거부할 수도 있습니다.
 IN=-

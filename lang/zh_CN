@@ -76,7 +76,6 @@ REMOVED_FROM_TRANSLATION_FILE=从译文文件中删除
 HELP_INDEX='在线帮助'的翻译 (<code>help/<code>)
 EDIT_TRANSLATION_FILE=编辑 '%s' 的译文文件
 HELP_TITLE=[<code>%s</code>] 的'在线帮助' 翻译 (<code>help/</code>)
-HELP_TEXTAREA_MORE=放大文本框
 DOWNLOAD=下载
 EDIT=编辑
 PREVIOUS=前一个

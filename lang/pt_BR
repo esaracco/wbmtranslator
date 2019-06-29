@@ -14,7 +14,6 @@ FORM_TITLE_W=Módulos do Webmin
 ALL_WEBMIN_TRANSLATION=Todas as traduções do Webmin
 EDIT_TRANSLATION_FILE=Edita arquivo de tradução '%s'
 HELP_TITLE=[<code>%s</code>] Tradução da 'Ajuda Online' (<code>help/</code>)
-HELP_TEXTAREA_MORE=Aumenta as textareas
 DOWNLOAD=Download
 HELP_CONTENT2=Tradução
 MSG_NEW_TRANSLATION_EXIST=A língua especificada <code>%s</code> já existe para o módulo <code>%s</code>

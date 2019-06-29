@@ -74,7 +74,6 @@ EDIT_TRANSLATION_FILE=Sunting fail terjemahan '%s'
 ALL_WEBMIN_TRANSLATION=Semua terjemahan Webmin
 FORM_TITLE_W=Modul Webmin
 DOWNLOAD=Muat turun
-HELP_TEXTAREA_MORE=Besarkan ruang teks
 HELP_TITLE=[<code>%s</code>] 'Bantuan Atas Talian' terjemahan (<code>help/</code>)
 MSG_REMOVED_UNUSED=Item tak diguna telah dipadam
 MSG_ERROR_EMAIL=Sila masukkan alamat E-Mel anda dalam konfigurasi modul.

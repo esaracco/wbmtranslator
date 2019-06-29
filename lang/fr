@@ -57,7 +57,6 @@ HELP_INDEX=la traduction de l'aide (<code>help/</code>)
 HELP_LEGEND=[!] = A traduire, [X] = A mettre à jour
 HELP_NOEXIST=Ce module n'a pas d'aide en ligne (soit le répertoire <code>help</code> n'existe pas, soit il ne contient aucun fichiers HTML).
 HELP_TEXTAREA_LESS=Rétrécir les zones de texte
-HELP_TEXTAREA_MORE=Allonger les zones de texte
 HELP_TITLE=[<code>%s</code>] Traduction de l'aide (<code>help/</code>)
 IMPORTANT_NOTICE=Merci de veiller à faire vos traductions <b>sur la dernière version de développement de Webmin</b>, afin d'éviter les pertes de temps. Si vous envoyez vos traductions à l'équipe de traduction de Webmin et que vous ne respectez pas cela elles risquent fort d'être refusées.
 IN=dans
