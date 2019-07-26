@@ -62,7 +62,7 @@ IMPORTANT_NOTICE=Merci de veiller à faire vos traductions <b>sur la dernière ver
 IN=dans
 INDEX_DESCRIPTION=L'Assistant de Traduction permet aux traducteurs Webmin/Usermin d'avoir une vue globale de l'état des traductions en cours pour tous les modules et thèmes enregistrés, aussi bien au niveau de l'Interface Web que de la page de configuration.
 INTERFACE_DESCRIPTION1=Pour obtenir la liste des traductions disponibles pour l'Interface Web, sélectionnez un module dans la liste de choix ci-dessous.
-INTERFACE_DESCRIPTION2=La liste ci-dessous affiche les traductions associées au module sélectionné. La colonne "<i>Ajoutés</i>" permet de savoir si des éléments présents dans la version de référence n'existent pas dans la traduction. La colonne "<i>Supprimés</i>" permet de détecter des éléments qui se trouvent dans votre traduction mais n'existent plus dans la version de référence. Si vous voulez <b>ajouter une traduction</b> pour un nouveau langage, vous pouvez le faire depuis la section <a href="/%s/admin_main.cgi?app=%s">Administration</a>.
+INTERFACE_DESCRIPTION2=La liste ci-dessous affiche les traductions associées au module sélectionné. La colonne "<i>Ajoutés</i>" permet de savoir si des éléments présents dans la version de référence n'existent pas dans la traduction. La colonne "<i>Supprimés</i>" permet de détecter des éléments qui se trouvent dans votre traduction mais n'existent plus dans la version de référence. Si vous voulez <b>ajouter une traduction</b> pour un nouveau langage, vous pouvez le faire depuis la section <a href="/%s/admin_main.cgi?app=%s">Admin</a>.
 INTERFACE_INDEX=la traduction de l'Interface Web (<code>lang/</code>)
 INTERFACE_SPECIAL_TITLE=[<code>webmin</code>] Traduction de l'Interface Web (<code>%s/</code>)
 INTERFACE_TITLE=[<code>%s</code>] Traduction de l'Interface Web (<code>lang/</code>)
@@ -70,13 +70,13 @@ ITEMS=Eléments
 ITEMS_MODIFIED=modifié(s)
 LANGUAGE=Langue
 LATEST_WEBMIN=Webmin
-LINK_ADMIN_PAGE=Création/Administration des traductions
+LINK_ADMIN_PAGE=Admin
 LINK_HELP_PAGE=Traduction de l'aide (<code>help/</code>)
 LINK_INTERFACE_PAGE=Traduction de l'Interface Web (<code>lang/</code>)
 LINK_MODULE_CONFIG_PAGE=Traduction de la configuration (<code>config.info</code>)
 LINK_MODULE_INFO_PAGE=Traduction des informations (<code>module.info/theme.info</code>)
 LINK_SEND_PAGE=Envoyer les traductions par E-Mail
-MENU_ADMIN_MAIN_GO=Aller à la page de Création/Administration des traductions
+MENU_ADMIN_MAIN_GO=Aller à la page d'Administration des traductions
 MENU_HELP_MAIN_GO=Aller à la page de traduction de l'aide (help/)
 MENU_INTERFACE_MAIN_GO=Aller à la page Traduction de l'Interface Web (lang/)
 MENU_MODULE_CONFIG_MAIN_GO=Aller à la page Traduction de la configuration (config.info)
