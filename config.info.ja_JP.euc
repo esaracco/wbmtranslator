@@ -1,3 +1,0 @@
-trans_email=emailアドレス,0
-trans_smtp=SMTPサーバ,0
-trans_team_email=Webmin翻訳チームのアドレス<br>(デフォルト: <code>translations@webmin.com</code>),0
