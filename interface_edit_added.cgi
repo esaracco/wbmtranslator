@@ -21,10 +21,10 @@ my %new = &trans_get_hash_diff_new ($ref_lang, $lang, \%file_ref, \%file);
 ##### POST actions #####
 #
 # add new items in the translation file
-if ($in{'update'} ne '')
+if (defined ($in{'update'}))
 {
   my $updated = 0;
-  my $url = '';
+  my $url = "interface_main.cgi?app=$app&t=$lang&webmin_lang=$webmin_lang";
   
   foreach my $item (keys %in)
   {
@@ -39,24 +39,30 @@ if ($in{'update'} ne '')
     }
   }
 
-  ($webmin_lang eq 'lang')  ?
-    open (H, ">$root_directory/lang/$lang") :
-    open (H, ">" . (&trans_get_path ($app, "lang/$lang")));
-  foreach my $item (sort keys %file)
+  if ($updated)
   {
-    next if ($item eq '');
-    print H "$item=$file{$item}\n";
-  }
-  close (H);
+    ($webmin_lang eq 'lang')  ?
+      open (H, '>', "$root_directory/lang/$lang") :
+      open (H, '>', &trans_get_path ($app, "lang/$lang"));
+    foreach my $item (sort keys %file)
+    {
+      next if ($item eq '');
+      print H "$item=$file{$item}\n";
+    }
+    close (H);
   
-  # FIXME
-  # do not encode webmin "/lang/*" files
-  ($webmin_lang eq 'lang')  ?
-    &trans_char2ent ("$root_directory/lang/$lang", 'work') :
-    &trans_char2ent (&trans_get_path ($app, "lang/$lang"), 'html');
+    # FIXME
+    # do not encode webmin "/lang/*" files
+    ($webmin_lang eq 'lang')  ?
+      &trans_char2ent ("$root_directory/lang/$lang", 'work') :
+      &trans_char2ent (&trans_get_path ($app, "lang/$lang"), 'html');
 
-  $url = "interface_main.cgi?app=$app&t=$lang&webmin_lang=$webmin_lang";
-  $url .= "&o=add_new" if ($updated);
+    $url .= '&o=add_new';
+  }
+  else
+  {
+    $url .= '&o=add_new_none';
+  }
   
   &redirect ($url);
   exit;
@@ -64,32 +70,30 @@ if ($in{'update'} ne '')
 #
 ########################
 
-&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, undef, 1, 0, 0, qq(<b><a href="javascript:translate_console_open ();">$text{'TRANSLATE_CONSOLE_LINK'}</a></b>));
-&trans_translate_console_get_javascript ();
-print "<hr>\n";
-
-printf qq(<h1>$text{'EDIT_ADDED_TITLE'}</h1>), $app;
-printf qq(<p>$text{'EDIT_ADDED_DESCRIPTION'}</p>), $ref_lang, $lang;
+&trans_header ($text{'EDIT_ADDED_TITLE'}, $app, $lang);
+printf (qq(<br/>$text{'EDIT_ADDED_DESCRIPTION'}), $ref_lang, $lang);
 
 print qq(<p>);
 print qq(<form action="interface_edit_added.cgi" method="post">);
 print qq(<input type="hidden" name="app" value="$app">);
 print qq(<input type="hidden" name="t" value="$lang">);
 print qq(<input type="hidden" name="webmin_lang" value="$webmin_lang">);
-print qq(<table border=0 cellspacing=2 cellpadding=2>);
+print qq(<table class="trans keys-values" width="100%">);
 foreach my $key (sort keys %new)
 {
-  print qq(<tr><td $tb colspan=2><b>$key</b> :</td></tr>
-    <tr><td $cb>[<b>$ref_lang</b>]</td><td><code>);
-  print &html_escape ($new{"$key"});
-  print qq(</code></td></tr><tr><td $cb>[<b>$lang</b>]</td><td>
-    <textarea name="newitem_$key" rows=5 cols=80>$in{"newitem_$key"}</textarea>
-    </td></tr>);
+  printf (qq(
+    <tr>
+      <td>$key:</td>
+      <td class="to-translate">%s</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><textarea name="newitem_$key" rows=5>$in{"newitem_$key"}</textarea></td>
+    </tr>), &html_escape ($new{"$key"}));
 }
 print qq(</table>);
-print qq(<p><input type="submit" name="update" value="$text{'UPDATE_TRANSLATION_FILE'}"></p>);
+print qq(<p/><div><button type="submit" name="update" class="btn btn-success ui_form_end_submit"><i class="fa fa-fw fa-check-circle-o"></i> <span>$text{'UPDATE_TRANSLATION_FILE'}</span></button></div>);
 print qq(</form>);
 print qq(</p>);
 
-print qq(<hr>);
-&footer("interface_main.cgi?app=$app&webmin_lang=$webmin_lang", $text{'INTERFACE_INDEX'});
+&trans_footer ("interface_main.cgi?app=$app&webmin_lang=$webmin_lang", $text{'INTERFACE_INDEX'});

@@ -7,6 +7,7 @@
 
 require './translator-lib.pl';
 
+my ($_success, $_error, $_info) = ('', '', '');
 my $module_type = ($in{'module_type'}) ? $in{'module_type'} : 'core';
 my $old_module_type = $in{'old_module_type'}||'';
 my @array_app = my @array_app = ($module_type ne $old_module_type) ? () : split(/\0/, $in{'app'});
@@ -14,39 +15,33 @@ push (@array_app, $in{'app'}) if (!scalar (@array_app) && $in{'app'});
 my $multiple_modules = (scalar (@array_app) > 1);
 my $app = ($multiple_modules) ? $text{'MULTIPLE_MODULES'} : $array_app[0];
 my $lang = $in{'lang'};
-if (not $in{'module_type'} and $app and not $multiple_modules)
+if (!$in{'module_type'} && $app && !$multiple_modules)
   {$module_type = (&trans_is_webmin_module ($app)) ? 'core' : 'non-core'}
 
-# my_get_msg ()
-# IN: -
-# OUT: the message to display or ''
+# init_msg ()
 #
-# return a state message if a action occured
+# Set success or error message.
 #
-sub my_get_msg ()
+sub init_msg ()
 {
-  my $ret = '';
-
-  if ($in{'create'})
+  if (defined ($in{'create'}) && $app eq '')
   {
-    if ($app eq '')
-      {$ret = qq(<p><b>$text{'MSG_ERROR_CHOOSE_MODULE'}</b></p>)}
+    $_error = $text{'MSG_ERROR_CHOOSE_MODULE'};
   }
-
-  return $ret;
 }
 
 ##### POST actions #####
 #
 # send email with archive attached
-if ($in{'create'} and $app ne '')
+if (defined ($in{'create'}) && $app ne '')
 {
     my $url = '';
     
-    $url = 'archive_build.cgi?l=' . &urlize ($lang) . 
-      '&app=';
+    $url = 'archive_build.cgi?l='.&urlize($lang).'&app=';
     foreach my $mod (@array_app)
-      {$url .= &urlize ($mod) . "|"};
+    {
+      $url .= &urlize($mod).'|';
+    };
     $url =~ s/\|$//;
     &redirect ($url);
     exit;
@@ -54,15 +49,11 @@ if ($in{'create'} and $app ne '')
 #
 ########################
 
-&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, "send", 1, 0);
-print "<hr>\n";
-printf qq(<h1>$text{'ARCHIVE_TITLE'}</h1>), $app;
-if ($multiple_modules) {&trans_get_menu_icons_panel ('send_main')}
-  else {&trans_get_menu_icons_panel ('send_main', $app)}
-print qq(<p>$text{'SEND_DESCRIPTION1'}</p>);
+&trans_header ($text{'ARCHIVE_TITLE'}, $app);
+print qq(<br/>$text{'SEND_DESCRIPTION1'});
 
-# display state message
-print &my_get_msg ();
+# Set success or error msg
+&init_msg ();
 
 print qq(<p>);
 print qq(<form action="archive_main.cgi" method="post">);
@@ -75,12 +66,7 @@ print "<p><input onChange=\"getElementById('app').selectedIndex=-1;submit()\" ty
 print "<input onChange=\"getElementById('app').selectedIndex=-1;submit()\" type=\"radio\" name=\"module_type\" id=\"module_type_nc\" value=\"non-core\"" . 
   (($module_type eq 'non-core') ? ' checked="checked"' : '') . "> <label for=\"module_type_nc\">$text{'NON_CORE_MODULES'}</label></p>";
 
-# combo of the modules
-print qq(<select name="app" id="app" multiple size="10">);
 &trans_modules_list_get_options (\@array_app, $module_type);
-print "</select>";
-
-print qq(<p><input type="submit" name="refresh" value="$text{'REFRESH_FILTER_LANGUAGES'}"></p>);
 
 if (scalar (@array_app))
 {
@@ -93,14 +79,11 @@ if (scalar (@array_app))
   print "</select></p>";
   
   print qq(
-    <p>
-    <input type="submit" value="$text{'CREATE_ARCHIVE'}" name="create">
-    </p>
+    <div><button type="submit" class="btn btn-success ui_form_end_submit" name="create"><i class="fa fa-fw fa-bolt"></i> <span>$text{'CREATE_ARCHIVE'}</span></button></div>
   );
 }
 
 print qq(</form>);
 print qq(</p>);
 
-print qq(<hr>);
-&footer("", $text{'MODULE_INDEX'});
+&trans_footer ("admin_main.cgi?app=$app", $text{'MODULE_ADMIN_INDEX'}, $_success, $_error, $_info);

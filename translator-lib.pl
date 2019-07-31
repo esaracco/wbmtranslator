@@ -16,8 +16,6 @@
 # Foundation, Inc., 59 Temple Place, Suite 330,
 # Boston, MA 02111-1307, USA.
 
-use utf8;
-
 use WebminCore;
 &init_config();
 
@@ -34,47 +32,23 @@ if ($config{'trans_use_mailboxes'})
 
 # global array for bad perl modules
 # dependencies
-my @perl_deps = ();
+my %deps = ();
 
-eval "use File::Path qw(make_path)";
-push @perl_deps, 'File::Path' if ($@);
-eval "use File::Copy";
-push @perl_deps, 'File::Copy' if ($@);
-eval "use Encode";
-push @perl_deps, 'Encode' if ($@);
-eval "use JSON";
-push @perl_deps, 'JSON' if ($@);
-eval "use HTML::Entities";
-push @perl_deps, 'HTML::Entities' if ($@);
-eval "use POSIX";
-push @perl_deps, 'POSIX' if ($@);
-eval "use File::Basename";
-push @perl_deps, 'File::Basename' if ($@);
-eval "use Digest::MD5 qw(md5_hex)";
-push @perl_deps, 'Digest::MD5' if ($@);
-eval "use Date::Manip";
-push @perl_deps, 'Date::Manip' if ($@);
-eval "use MIME::Lite";
-push @perl_deps, 'MIME::Lite' if ($@);
-if (!$config{'trans_use_mailboxes'})
-{
-  eval "use Mail::Sender";
-  push @perl_deps, 'Mail::Sender' if ($@);
-  
-  # if CRAM-MD5 smtp auth method
-  if ($config{trans_smtp_method} eq 'CRAM-MD5')
-  {
-    eval "use Digest::HMAC_MD5";
-    push @perl_deps, 'Digest::HMAC_MD5' if ($@);
-  }
-  
-  # if NTLM smtp auth method
-  elsif ($config{trans_smtp_method} eq 'NTLM')
-  {
-    eval "use Authen::NTLM";
-    push @perl_deps, 'Authen::NTLM' if ($@);
-  }
-}
+eval'use File::Path qw(make_path)';$deps{'File::Path'} = 1 if ($@);
+eval'use File::Copy';$deps{'File::Copy'} = 1 if ($@);
+eval'use Encode';$deps{'Encode'} = 1 if ($@);
+eval'use JSON';$deps{'JSON'} = 1 if ($@);
+eval'use HTML::Entities';$deps{'HTML::Entities'} = 1 if ($@);
+eval'use POSIX';$deps{'POSIX'} = 1 if ($@);
+eval'use File::Basename';$deps{'File::Basename'} = 1 if ($@);
+eval'use Digest::MD5 qw(md5_hex)';$deps{'Digest::MD5'} = 1 if ($@);
+eval'use Date::Manip';$deps{'Date::Manip'} = 1 if ($@);
+eval'use MIME::Lite';$deps{'MIME::Lite'} = 1 if ($@);
+eval'use LWP::UserAgent';$deps{'LWP::UserAgent'} = 1 if ($@);
+eval'use Mail::Sender';$deps{'Mail::Sender'} = 1 if ($@);
+eval'use Digest::HMAC_MD5';$deps{'Digest::HMAC_MD5'} = 1 if ($@);
+eval'use Authen::NTLM';$deps{'Authen::NTLM'} = 1 if ($@);
+
 # all binaries paths are here
 my $all_path = (); &trans_init_all_path ();
 
@@ -91,12 +65,27 @@ our $ref_lang = &trans_get_ref_lang ($in{'app'});
 sub trans_get_ref_lang ( $ )
 {
   my $app = shift;
+  my $dir = ($config{'trans_webmin'}) ? 'lang' : 'ulang';
 
   return (
       $app &&
       $current_lang =~ /\.(.+)$/ &&
-      -s &trans_get_path ($app, "lang/en.$1")
+      -s &trans_get_path ($app, "$dir/en.$1")
     ) ? "en.$1" : 'en';
+}
+
+# trans_check_new_release ()
+# OUT: New release version.
+#
+# Check if a new wbmtranslator release is available.
+#
+sub trans_check_new_release ()
+{
+  my $r = (LWP::UserAgent->new())->get("https://wbmtranslator.esaracco.fr/VERSION");
+  my ($local_version) = $module_info{'version'} =~ /^([^g]+)/;
+
+  return ($r->is_success && $r->content =~ /^([\d\.]+)/ &&
+          $1 ne $local_version) ? $1 : '';
 }
 
 # clean config inputs
@@ -145,9 +134,7 @@ sub trans_main_check_config ()
     "/$config{'trans_working_path'}/.translator/$remote_user/archives",
     "/$config{'trans_working_path'}/.translator/$remote_user/monitoring/usermin",
     "/$config{'trans_working_path'}/.translator/$remote_user/monitoring/webmin",
-    "/$config{'trans_working_path'}/.translator/$remote_user/monitoring/usermin/ref",
     "/$config{'trans_working_path'}/.translator/$remote_user/monitoring/usermin/fingerprints",
-    "/$config{'trans_working_path'}/.translator/$remote_user/monitoring/webmin/ref",
     "/$config{'trans_working_path'}/.translator/$remote_user/monitoring/webmin/fingerprints",
     {
       'chmod' => 0700
@@ -167,9 +154,9 @@ sub trans_main_check_config ()
 #
 sub trans_trim_config ()
 {
- foreach $key (keys %config)
+  while (my ($k, $dum) = each (%config))
   {
-    $config{$key} =~ s/^\s+|\s+$//g;
+    $config{$k} =~ s/^\s+|\s+$//g;
   } 
 }
 
@@ -201,24 +188,25 @@ sub trans_check_config_exit ( $ )
 # 
 sub trans_get_language_reference ( $ @ % )
 {
-  my ($have_ref, @rows, $p1) = @_;
-  my (%file_ref) = %$p1;
-
-  return if ($have_ref == 1);
-
-  foreach my $item (@rows)
-  {
-    my %row = %$item;
-    
-    if ($row{'language'} eq $ref_lang)
-    {
-      $row{'reference'} = 1;
-      %$item = %row;
-      %file_ref = \$row{'file'};
-      
-      return;
-    }
-  }
+#FIXME useful ?
+##  my ($have_ref, @rows, $p1) = @_;
+##  my (%file_ref) = %$p1;
+##
+##  return if ($have_ref == 1);
+##
+##  foreach my $item (@rows)
+##  {
+##    my %row = %$item;
+##    
+##    if ($row{'language'} eq $ref_lang)
+##    {
+##      $row{'reference'} = 1;
+##      %$item = %row;
+##      %file_ref = \$row{'file'};
+##      
+##      return;
+##    }
+##  }
 }
 
 # trans_get_diff_removed ( $ $ % % )
@@ -231,7 +219,7 @@ sub trans_get_language_reference ( $ @ % )
 #
 # return the number of removed items
 # 
-sub trans_get_diff_removed ( $ $ % % )
+sub trans_get_diff_removed ( $ $ \% \% )
 {
   my ($ref, $lang, $p1, $p2) = @_;
   my (%file_ref) = %$p1;
@@ -240,20 +228,9 @@ sub trans_get_diff_removed ( $ $ % % )
 
   return 0 if ($ref eq $lang);
 
-  foreach my $trans (keys %file)
+  while (my ($k, $dum) = each (%file))
   {
-    my $found = 0;
-
-    foreach my $ref (keys %file_ref)
-    {
-      if ($trans eq $ref)
-      {
-        $found = 1;
-        last;
-      }
-    }
-
-    ++$removed if (!$found && $ref ne '');
+    ++$removed if (!exists ($file_ref{$k}));
   }
 
   return $removed;
@@ -269,7 +246,7 @@ sub trans_get_diff_removed ( $ $ % % )
 #
 # return the number of new items
 #
-sub trans_get_diff_new ( $ $ % % )
+sub trans_get_diff_new ( $ $ \% \% )
 {
   my ($ref, $lang, $p1, $p2) = @_;
   my (%file_ref) = %$p1;
@@ -277,21 +254,10 @@ sub trans_get_diff_new ( $ $ % % )
   my $new = 0;
   
   return 0 if ($ref eq $lang);
-  
-  foreach my $ref (keys (%file_ref))
-  {
-    my $found = 0;
-    
-    foreach my $trans (keys %file)
-    {
-      if ($trans eq $ref && $file{$trans} ne '')
-      {
-        $found = 1;
-        last;
-      }
-    }
 
-    ++$new if (!$found && $ref ne '');
+  while (my ($kref, $dum) = each (%file_ref))
+  {
+    ++$new if (!exists ($file{$kref}) || $file{$kref} eq '')
   }
 
   return $new;
@@ -307,7 +273,7 @@ sub trans_get_diff_new ( $ $ % % )
 #
 # return a hash of the new items
 #
-sub trans_get_hash_diff_new ( $ $ % % )
+sub trans_get_hash_diff_new ( $ $ \% \% )
 {
   my ($ref, $lang, $p1, $p2) = @_;
   my (%file_ref) = %$p1;
@@ -316,20 +282,9 @@ sub trans_get_hash_diff_new ( $ $ % % )
 
   return 0 if ($ref eq $lang);
 
-  foreach my $ref (keys (%file_ref))
+  while (my ($k, $v) = each (%file_ref))
   {
-    my $found = 0;
-    
-    foreach my $trans (keys %file)
-    {
-      if ($trans eq $ref && $file{$trans} ne '')
-      {
-        $found = 1;
-        last;
-      }
-    }
-
-    $new{$ref} = $file_ref{$ref} if (!$found && $ref ne '');
+    $new{$k} = $v if (!exists ($file{$k}) || $file{$k} eq '');
   }
 
   return %new;
@@ -345,7 +300,7 @@ sub trans_get_hash_diff_new ( $ $ % % )
 #
 # return a hash of the removed items
 #
-sub trans_get_hash_diff_removed ( $ $ % % )
+sub trans_get_hash_diff_removed ( $ $ \% \% )
 {
   my ($ref, $lang, $p1, $p2) = @_;
   my (%file_ref) = %$p1;
@@ -354,20 +309,9 @@ sub trans_get_hash_diff_removed ( $ $ % % )
 
   return 0 if ($ref eq $lang);
   
-  foreach my $trans (keys (%file))
+  while (my ($k, $v) = each (%file))
   {
-    my $found = 0;
-
-    foreach my $ref (keys (%file_ref))
-    {
-      if ($trans eq $ref)
-      {
-        $found = 1;
-        last;
-      }
-    }
-
-    $removed{$trans} = $file{$trans} if (!$found && $trans ne '');
+    $removed{$k} = $v if (!exists ($file_ref{$k}));
   }
 
   return %removed;
@@ -445,14 +389,9 @@ sub trans_get_items_static ( $ )
 
       next if ($name eq '' || $value eq '');
 
-      $item{"$name"} = $value;
+      $item{$name} = $value;
       $file[$count++] = \%item;
     }
-# FIXME malformed item
-#    elsif ($name ne '')
-#    {
-#      $item{"$name"} .= $line;
-#    }
   }
   close (FH);
 
@@ -488,6 +427,17 @@ sub trans_get_string_from_size ( $ )
   return $ret
 }
 
+sub trans_get_cache_path ($ $ $ $ $)
+{
+  my ($type, $lang, $path, $app, $basic) = @_;
+  my $wu = &trans_get_current_app ();
+
+  return
+    "$config{'trans_working_path'}/.translator/".
+    "$remote_user/monitoring/$wu/fingerprints/${app}".(($basic)?'_lang':'').
+    "-${type}_${lang}";
+}
+
 # trans_build_cache ($ $ $ $ $ )
 # IN: type ('interface' or 'config')
 #     language
@@ -498,22 +448,22 @@ sub trans_get_string_from_size ( $ )
 #
 # build a cache file with md5 sums of each value.
 # 
-sub trans_build_cache ( $ $ $ $ $ )
+sub trans_build_cache ( $ $ $ $ $ $ )
 {
-  my ($type, $lang, $path, $app, $basic) = @_;
-  my %hash = ();
-  my $wu = &trans_get_current_app ();
+  my ($type, $lang, $path, $app, $basic, $notexists) = @_;
+  my $f = &trans_get_cache_path ($type, $lang, $path, $app, $basic);
 
-  open (FH, '>', 
-    "/$config{'trans_working_path'}/.translator/".
-    "$remote_user/monitoring/$wu/fingerprints/${app}".(($basic)?'_lang':'').
-    "-${type}_${lang}");
-  %hash = &trans_get_items ($path);
-  foreach my $key (keys %hash)
+  return if ($notexists && -f $f);
+
+  open (my $fh, '>', $f);
+
+  my %hash = &trans_get_items ($path);
+  while (my ($k, $v) = each (%hash))
   {
-    print FH "$key=" . (&md5_hex ($hash{$key})) . "|#|$hash{$key}\n";
+    print $fh "$k=".(&md5_hex($v))."|#|$v\n";
   }
-  close (FH);
+
+  close ($fh);
 }
 
 # trans_get_updated ( $ $ $ $ )
@@ -913,15 +863,106 @@ sub trans_is_language ( $ $ )
   );
 }
 
-# trans_footer ()
-# IN: -
-# OUT: -
+# trans_header ()
+# IN: - Page title
+#     - Specific help file (optional)
 #
-# display the version of this module
-# 
-sub trans_footer ()
+# Display header.
+#
+sub trans_header ( $ $ $ )
 {
-  print qq(<p><i>wbmtranslator</i> <b>$module_info{'version'}</b></p>);
+  my ($title, $app, $lang, $help_file) = @_;
+  my $subtitle = '';
+  my $mainApp = ($config{'trans_webmin'}) ?
+                  $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'};
+
+  $lang = ($lang) ? "'$lang'":'';
+
+  $help_file ||= basename($scriptname, '.cgi');
+
+  &header (sprintf($text{'FORM_TITLE'}, $mainApp), undef, $help_file, 1, 0, 0,
+    qq(<button class="btn btn-primary" onclick="translate_console_open ($lang)"><span style="white-space:nowrap">$text{'TRANSLATE_CONSOLE_LINK'}</span>));
+
+  &trans_header_extra ();
+
+  if ($title =~ /^(.*)\|(.*)$/)
+  {
+    ($title, $subtitle) = ($1, $2);
+  }
+
+  if ($app)
+  {
+    printf (qq(<div style="margin-top:5px">$text{'MODULE_TRANSLATION'} <div id="header-module">$app%s</div></div>), ($subtitle)?qq(&nbsp;(<span>$subtitle</span>)):'');
+  }
+
+  print qq(<h1>$title</h1>) if ($title);
+}
+
+sub trans_header_extra ()
+{
+  my $module_version = $module_info{'version'};
+
+  print qq(<link rel="stylesheet" type="text/css" href="css/styles.css?$module_version"/>);
+  print qq(<script src="js/scripts.js?$module_version"></script>);
+  print qq(<div id="trans-msg"></div>);
+}
+
+sub trans_display_msg ( $ $ $ )
+{
+  my ($msg, $msg_type, $icon) = @_;
+
+  if ($icon)
+  {
+    $msg = qq(<i class='fa fa-fw fa-$icon'></i> ).$msg;
+  }
+  elsif ($msg_type eq 'success')
+  {
+    $msg = qq(<i class='fa fa-fw fa-info-circle'></i> ).$msg;
+  }
+  elsif ($msg_type eq 'danger')
+  {
+    $msg = qq(<i class='fa fa-fw fa-exclamation-circle'></i> $text{'WARNING'} : ).$msg;
+  }
+  elsif ($msg_type eq 'info')
+  {
+    $msg = qq(<i class='fa fa-fw fa-paperclip'></i> ).$msg;
+  }
+
+  $msg =~ s/"/\\"/g;
+
+  print qq(<script>displayMsg("$msg", "$msg_type")</script>) if ($msg);
+}
+
+
+# trans_footer ()
+# IN: - url to redirect to
+#     - text for return link button
+#     - msg success
+#     - msg error
+#
+# Display sucess or error mesage.
+# 
+sub trans_footer ( $ $ $ $ $ $)
+{
+  my ($url, $link_label, $success, $error, $info, $from_main_page) = @_;
+  my $msg;
+
+  if ($msg = $error)
+  {
+    $msg_type = 'danger';
+  }
+  elsif ($msg = $success)
+  {
+    $msg_type = 'success';
+  }
+  elsif ($msg = $info)
+  {
+    $msg_type = 'info';
+  }
+
+  print qq(<hr/>) if (!$from_main_page);
+  &trans_display_msg ($msg, $msg_type) if ($msg);
+  &footer ($url, $link_label);
 }
 
 # trans_archive_create ( $ $ \@ )
@@ -1204,17 +1245,14 @@ sub trans_archive_send ( $ $ $ $ $ \@ $ )
   my @app = @$array;
   my $subject = '';
   my $message = '';
-  my $mods_list = '';
   my $ret = 0;
   my $m = undef;
   my $multiple_modules = (scalar (@app) > 1);
   my $mail = undef;
   my $mtype = ($config{'trans_webmin'}) ? 'Webmin' : 'Usermin';
+  my $mods_list = join (', ', @app);
 
   $body =~ s/^\s+|\s+$//g;
-  
-  foreach my $mod (@app) {$mods_list .= "$mod, "}
-  $mods_list =~ s/\, $//g;
   
   $subject = sprintf (
     "[$mtype] Translations ($mods_list - %s)",
@@ -1476,25 +1514,54 @@ sub trans_get_module_version ( $ )
   return $ret;
 }
 
-# trans_check_perl_deps ()
-# IN: -
+# trans_check_deps ( $ )
+# IN: - 1 if from main_page
 # OUT: -
 #
-# check if all dependencies are ok for perl
-# -> test them before with the "eval" function and push all bad
-#    dependencies in the global @perl_deps array
-# 
+# Check if all dependencies are ok for perl
+# -> test them before with the "eval" function and add all bad
+#    dependencies in the global %deps hash
+#
 sub trans_check_perl_deps ()
 {
-  return if (!scalar (@perl_deps)); 
-    
-  print qq($text{'PERL_DEPS_ERROR'});
-  print qq(<ul>);
-  foreach my $mod (@perl_deps)
+  return if (!%deps);
+
+  if (!$config{'trans_use_mailboxes'})
   {
-    print qq(<li><b>$mod</b></li>\n);
+    # If not CRAM-MD5 smtp auth method
+    if ($config{trans_smtp_method} ne 'CRAM-MD5')
+    {
+      delete $deps{'Digest::HMAC_MD5'};
+    }
+    
+    # If not NTLM smtp auth method
+    elsif ($config{trans_smtp_method} ne 'NTLM')
+    {
+      delete $deps{'Authen::NTLM'};
+    }
   }
-  print qq(</ul><hr>);
+  else
+  {
+    delete $deps{'Mail::Sender'};
+    delete $deps{'Digest::HMAC_MD5'};
+    delete $deps{'Authen::NTLM'};
+  }
+
+  return if (!%deps);
+
+  $error = qq($text{'PERL_DEPS_ERROR'}<p/>);
+  $error .= qq(<ul>);
+  while (my ($k, $v) = each (%deps))
+  { 
+    $error .= qq(<li><b>$k</b></li>);
+  }
+  $error .= qq(</ul>);
+  
+  if ($error)
+  {
+    &trans_footer ('/', $text{'index'}, '', $error, undef, 1);
+    exit;
+  }
 }
 
 # trans_get_translation_filename ( \@ $ )
@@ -1579,49 +1646,18 @@ sub trans_translate_console_get_javascript ( $ )
 sub trans_get_menu_icons_panel ( $ $ )
 {
   my $current = shift;
-  my $app = shift || '';
-  my (
-       $interface, 
-       $help, 
-       $module_config, 
-       $module_info,
-       $send, 
-       $admin
-     ) = (
-       ($current eq 'interface_main') ? 
-         'interface_24x24_disable.png' : 'interface_24x24.png',
-       ($current eq 'help_main') ? 
-         'help_24x24_disable.png' : 'help_24x24.png',
-       ($current eq 'module_config_main') ? 
-         'module_config_24x24_disable.png' : 'module_config_24x24.png',
-       ($current eq 'module_info_main') ? 
-         'module_info_24x24_disable.png' : 'module_info_24x24.png',
-       ($current eq 'send_main') ? 
-         'send_24x24_disable.png' : 'send_24x24.png',
-       ($current eq 'admin_main') ? 
-         'admin_24x24_disable.png' : 'admin_24x24.png',
-     );
+  my $app = shift||'';
 
-  # interface translation
-  print qq(<table border=0 cellspacing=1 cellpadding=1 bgcolor="silver"><tr>);
-  print qq(<td><a href="interface_main.cgi?app=$app"><img border=0 src="images/$interface" alt="$text{'MENU_INTERFACE_MAIN_GO'}" title="$text{'MENU_INTERFACE_MAIN_GO'}"></a></td>);
-
-  # help translation
-  print qq(<td><a href="help_main.cgi?app=$app"><img border=0 src="images/$help" alt="$text{'MENU_HELP_MAIN_GO'}" title="$text{'MENU_HELP_MAIN_GO'}"></a></td>);
-  
-  # configuration translation
-  print qq(<td><a href="module_config_main.cgi?app=$app"><img border=0 src="images/$module_config" alt="$text{'MENU_MODULE_CONFIG_MAIN_GO'}" title="$text{'MENU_MODULE_CONFIG_MAIN_GO'}"></a></td>);
-
-  # module informations translation
-  print qq(<td><a href="module_info_main.cgi?app=$app"><img border=0 src="images/$module_info" alt="$text{'MENU_MODULE_INFO_MAIN_GO'}" title="$text{'MENU_MODULE_INFO_MAIN_GO'}"></a></td>);
-
-  # send
-  print qq(<td><a href="send_main.cgi?app=$app"><img border=0 src="images/$send" alt="$text{'MENU_SEND_MAIN_GO'}" title="$text{'MENU_SEND_MAIN_GO'}"></a></td>);
-  
-  # administration translation
-  print qq(<td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td><a href="admin_main.cgi?app=$app"><img border=0 src="images/$admin" alt="$text{'MENU_ADMIN_MAIN_GO'}" title="$text{'MENU_ADMIN_MAIN_GO'}"></a></td>);
-
-  print qq(</tr></table>\n);
+  print qq(<div id="menu-icon-panel">);
+  foreach my $menu (qw(admin interface module_config module_info help send))
+  {
+    printf (qq(<div%s><a href="%s_main.cgi?app=$app"><img src="images/%s_24x24.png" title="%s"></a></div>),
+      ($current eq $menu.'_main')?' class="selected"':'',
+      $menu, $menu,
+      $text{'LINK_'.uc($menu).'_PAGE'});
+  }
+  print qq(</div>);
+  print qq(<div class="clear"></div>);
 }
 
 # trans_modules_list_get_options ( \@ $ )
@@ -1635,8 +1671,12 @@ sub trans_get_menu_icons_panel ( $ $ )
 sub trans_modules_list_get_options ( \@ $ )
 {
   my ($array, $module_type) = @_;
-  my @app = @$array;
+  my $multi = ($module_type) ? ' multiple size="10"':'';
   
+  print qq(<select name="app" id="app" onchange="submit()"$multi>);
+
+  print qq(<option value="">$text{'SELECT_MODULE'}</option>) if (!$multi);
+
   foreach my $m (
     sort { $a->{'dir'} cmp $b->{'dir'} }
       grep { &check_os_support($_) } &trans_get_all_module_infos ())
@@ -1645,10 +1685,13 @@ sub trans_modules_list_get_options ( \@ $ )
       $module_type eq 'core' && !&trans_is_webmin_module ($m->{'dir'}) ||
       $module_type eq 'non-core' && &trans_is_webmin_module ($m->{'dir'})
     );
-    printf qq(<option value="%s"%s>%s : %s</option>\n),
-      $m->{'dir'}, (grep /^$m->{'dir'}$/, @app) ? ' selected="selected"' : '', 
-      $m->{'dir'}, $m->{'desc'};
+    printf (qq(<option value="%s"%s>%s : %s</option>),
+      $m->{'dir'},
+      (grep /^$m->{'dir'}$/, @$array) ? ' selected="selected"' : '',
+      $m->{'dir'}, $m->{'desc'});
   }
+
+  print "</select><p/>";
 }
 
 # trans_lang_must_be_encoded ( $ )
@@ -1754,23 +1797,6 @@ sub trans_set_user_var ( $ $ )
 {
   my ($name, $value) = @_;
   my %hash = ();
-  my $reg = '^monitor_' . &trans_get_current_app () . '_(.*)$';
-  my $wu = &trans_get_current_app ();
-  
-  # build cache for a given app if requested
-  if ($name =~ /$reg/ && $value == 1)
-  {
-    &trans_build_cache ('interface', $ref_lang, &trans_get_path ($1, "lang/$ref_lang"), $1);
-    &trans_build_cache ('config', $ref_lang, &trans_get_path ($1, 'config.info'), $1);
-    copy (&trans_get_path ($1, "lang/$ref_lang"), "/$config{'trans_working_path'}/.translator/$remote_user/monitoring/$wu/ref/$1-interface_$ref_lang");
-    copy (&trans_get_path ($1, 'config.info'), "/$config{'trans_working_path'}/.translator/$remote_user/monitoring/$wu/ref/$1-config_$ref_lang");
-
-    if ($1 eq 'webmin')
-    {
-      &trans_build_cache ('interface', $ref_lang, "$root_directory/lang/$ref_lang", 'webmin_lang');
-      copy ("$root_directory/lang/$ref_lang", "/$config{'trans_working_path'}/.translator/$remote_user/monitoring/$wu/ref/webmin_lang-interface_$ref_lang");
-    }
-  }
   
   if (open (FH, '<', "/$config{'trans_working_path'}/.translator/".
                      "$remote_user/user_vars"))
@@ -1795,30 +1821,56 @@ sub trans_set_user_var ( $ $ )
   close (FH);
 }
 
-# trans_monitor_panel ( $ )
+# trans_monitor_panel ( $ $ )
 # IN: module name
 # OUT: -
 #
 # print a table with monitoring panel
 #
-sub trans_monitor_panel ( $ )
+sub trans_monitor_panel ( $ $ $ )
 {
-  my $app = shift;
-  my $monitor = &trans_get_user_var ('monitor_'.
-                                       &trans_get_current_app()."_$app");
-  $monitor = 0 if ($monitor eq '');
+  my ($app, $monitor, $basic_webmin) = @_;
+  my $ret = '';
+
+  $basic_webmin = ($app eq 'webmin') if (!defined ($basic_webmin));
+
+  return if (!$app);
+
+  # If we must monitor/unmonitor a module
+  if (defined ($monitor) && $monitor ne '')
+  {
+    &trans_set_user_var ("monitor_".&trans_get_current_app()."_$app", $monitor);
   
-  printf qq(
-    <p>
-    <table style="background:silver;font-size:10px;font-family:Verdana,Arial,Helvetica,sans-serif;color:black;border:2px green solid;"><tr><td>
-    $text{'MONITOR_MODULE'} 
-    <input type="radio" id='m1' name="monitor" onChange="submit()" value="1"%s><label for='m1'>&nbsp;$text{'YES'}</label>
-    <input type="radio" id='m2' name="monitor" onChange="submit()" value="0"%s><label for='m2'> $text{'NO'}</label>
-    </td></tr></table>
-    </p>
-  ),
-  ($monitor) ? ' checked="checked"' : '',
-  (!$monitor) ? ' checked="checked"' : '';
+    $ret = sprintf (($monitor)?$text{'MSG_MONITOR'}:$text{'MSG_MONITOR_NOT'},
+                      $app);
+
+    # If we must monitor the module, we build a translation file fingerprint
+    if ($monitor)
+    {
+      &trans_build_cache ('interface', $ref_lang,
+        &trans_get_path ($app, "lang/$ref_lang"), $app, $basic_webmin, 1);
+      &trans_build_cache ('config', $ref_lang,
+        &trans_get_path ($app, 'config.info'), $app, $basic_webmin, 1);
+
+      if ($app eq 'webmin')
+      {
+        &trans_build_cache ('interface', $ref_lang, "$root_directory/lang/$ref_lang",
+          'webmin_lang', 1, 1);
+      }
+    }
+  }
+
+  my $status = int (&trans_get_user_var ('monitor_'.&trans_get_current_app()."_$app"));
+
+  printf (qq(
+    <div id="monitor-panel" class="alert alert-info" style="display:inline-block;border-radius:5px">
+    <input type="hidden" name="monitor" id="monitor" value=""/>
+    $text{'MONITOR_MODULE'} <input type="radio" id='m1' name="mon1" onchange="document.getElementById('monitor').value=this.value;submit()" value="1"%s>&nbsp;<label for='m1'>$text{'YES'}</label> <input type="radio" id='m2' name="mon1" onchange="document.getElementById('monitor').value=this.value;submit()" value="0"%s>&nbsp;<label for='m2'>$text{'NO'}</label>
+    </div>),
+    ($status) ? ' checked="checked"' : '',
+    (!$status) ? ' checked="checked"' : '');
+
+  return $ret;
 }
 
 # trans_monitor_news ()
@@ -1832,9 +1884,9 @@ sub trans_monitor_news ()
 {
   my %hash = &trans_get_user_var_hash ('monitor_'.&trans_get_current_app().'_');
   my $wu = &trans_get_current_app ();
-  my $ret;
+  my $ret = '';
 
-  foreach my $app (keys (%hash))
+  foreach my $app (sort keys %hash)
   {
     if ($hash{$app} == 1)
     {
@@ -1843,7 +1895,7 @@ sub trans_monitor_news ()
       my $changed = 0;
       my $item = '';
       my %file_ref = &trans_get_items (&trans_get_path ($app, "lang/$ref_l"));
-      my %file = &trans_get_items ("/$config{'trans_working_path'}/.translator/$remote_user/monitoring/$wu/ref/$app-interface_$ref_l");
+      my %file = &trans_get_items ("/$config{'trans_working_path'}/.translator/$remote_user/monitoring/$wu/fingerprints/$app-interface_$ref_l");
       my $new = &trans_get_diff_new (' ', $ref_l, \%file_ref, \%file);
       my $removed = &trans_get_diff_removed (' ', $ref_l, \%file_ref, \%file);
       my $updated = &trans_get_updated ('interface', $ref_l, $app, '');
@@ -1851,7 +1903,7 @@ sub trans_monitor_news ()
       if ($app eq 'webmin')
       {
         %file_ref = &trans_get_items ("$root_directory/lang/$ref_l");
-        %file = &trans_get_items ("/$config{'trans_working_path'}/.translator/$remote_user/monitoring/$wu/ref/webmin_lang-interface_$ref_l");
+        %file = &trans_get_items ("/$config{'trans_working_path'}/.translator/$remote_user/monitoring/$wu/fingerprints/webmin-interface_$ref_l");
 
         $new = $new + &trans_get_diff_new (' ', $ref_l, \%file_ref, \%file);
         $removed = $removed + &trans_get_diff_removed (' ', $ref_l, \%file_ref, \%file);
@@ -1862,12 +1914,12 @@ sub trans_monitor_news ()
       if ($new || $removed || $updated)
       {
         $changed = 1;
-
-        $item .= qq(
-	 <th><a href="/$module_name/interface_main.cgi?app=$app">$new</a></th>
-	 <th><a href="/$module_name/interface_main.cgi?app=$app">$removed</a></th>
-	 <th><a href="/$module_name/interface_main.cgi?app=$app">$updated</a></th>
-	);
+        foreach (($new, $removed, $updated))
+        {
+          $item .= ($_) ?
+           qq(<th><a href="interface_main.cgi?app=$app">$_</a></th>) :
+           qq(<td></td>);
+        }
       }
       else
       {
@@ -1877,7 +1929,7 @@ sub trans_monitor_news ()
       $new = $removed = $updated = 0;
 
       %file_ref = &trans_get_items (&trans_get_path ($app, 'config.info'));
-      %file = &trans_get_items ("/$config{'trans_working_path'}/.translator/$remote_user/monitoring/$wu/ref/$app-config_$ref_l");
+      %file = &trans_get_items ("/$config{'trans_working_path'}/.translator/$remote_user/monitoring/$wu/fingerprints/$app-config_$ref_l");
 
       $new = &trans_get_diff_new (' ', $ref_l, \%file_ref, \%file);
       $removed = &trans_get_diff_removed (' ', $ref_l, \%file_ref, \%file);
@@ -1886,19 +1938,18 @@ sub trans_monitor_news ()
       if ($new || $removed || $updated)
       {
         $changed = 1;
-        $item .= qq(
-         <th><a href="/$module_name/module_config_main.cgi?app=$app">$new</a></th>
-         <th><a href="/$module_name/module_config_main.cgi?app=$app">$removed</a></th>
-         <th><a href="/$module_name/module_config_main.cgi?app=$app">$updated</a></th>
-       );
+        foreach (($new, $removed, $updated))
+        {
+          $item .= ($_) ?
+           qq(<th><a href="module_config_main.cgi?app=$app">$_</a></th>) :
+           qq(<td></td>);
+        }
       }
       else
       {
         $item .= qq(<td colspan="3">&nbsp;</td>);
       }
       
-      $item .= qq(<td align=center><a href="index.cgi?remove=$app"><img title="$text{'REMOVE_FROM_MONITOR'}" border=0 src="/$module_name/images/delete.png"></a></td></tr>\n);
-
       $ret .= $item if ($changed == 1);
     }
   }
@@ -1906,15 +1957,11 @@ sub trans_monitor_news ()
   if ($ret)
   {
     $ret = qq(
-      <tr $tb><th>$text{'MODULE'}</th><th colspan="3">$text{'WEB_INTERFACE'}</th><th colspan="3">$text{'CONFIGURATION'}</th><th>$text{'ACTION'}</th></tr>
-      <tr $tb><td>&nbsp;</td><td>$text{'ADDED'}</td><td>$text{'REMOVED'}</td><td>$text{'UPDATED'}</td>
-      <td>$text{'ADDED'}</td><td>$text{'REMOVED'}</td><td>$text{'UPDATED'}</td><td>&nbsp;</td></tr>
+      <tr><td>$text{'MODULE'}</td><td colspan="3">$text{'WEB_INTERFACE'}</td><td colspan="3">$text{'CONFIGURATION'}</td></tr>
+      <tr><td>&nbsp;</td><td>$text{'ADDED'}</td><td>$text{'REMOVED'}</td><td>$text{'UPDATED'}</td>
+      <td>$text{'ADDED'}</td><td>$text{'REMOVED'}</td><td>$text{'UPDATED'}</td></tr>
       $ret
     );
-  }
-  else
-  {
-    $ret = '';
   }
 
   return $ret;
@@ -2033,9 +2080,17 @@ sub trans_init_translate_popup_langs ( $ $ )
 sub trans_debug ( $ )
 {
   use Data::Dumper;
-  open (FH, '>>', '/tmp/trans_debug.log');
-  print FH Dumper(shift)."\n";
-  close(FH);
+  my ($txt, $to_file) = @_;
+  if ($to_file)
+  {
+    open (FH, '>>', '/tmp/trans_debug.log');
+    print FH Dumper(shift)."\n";
+    close(FH);
+  }
+  else
+  {
+    print '<pre style="background:silver;color:black">'.Dumper($txt).'</pre>';
+  }
 }
 #
 #################

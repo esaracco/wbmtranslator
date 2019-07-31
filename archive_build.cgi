@@ -24,13 +24,13 @@ my $hid_mods = '';
 ##### POST actions #####
 #
 # send the file to the browser
-if ($in{'download'} ne '')
+if (defined ($in{'download'}))
 {
   &trans_archive_send_browser ($file);
   exit;
 }
 # create the file
-elsif (not $in{'send'})
+elsif (!$in{'send'})
 {
   &trans_archive_create ($file, $lang, \@array_app);
 }
@@ -40,9 +40,7 @@ elsif (not $in{'send'})
 $size = -s "/$config{'trans_working_path'}/.translator/$remote_user/archives/$file";
 $size_print = &trans_get_string_from_size ($size);
 
-&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, undef, 1, 0);
-print "<hr>\n";
-printf qq(<h1>$text{'ARCHIVE_TITLE'}</h1>), $app;
+&trans_header ($text{'ARCHIVE_TITLE'}, $app, $lang);
 
 print qq(<p>);
 print qq(<form action="archive_build.cgi" method="post">);
@@ -54,14 +52,16 @@ print qq(<input type="hidden" name="app" value="$in{'app'}">);
 print qq(<input type="hidden" name="l" value="$lang">);
 print qq(
   <p>
-  <table border=1>
-  <tr><td $cb>$text{'FILENAME'}:</td><td>$filename</td></tr>
-  <tr><td $cb>$text{'FILESIZE'}:</td><td>$size_print</td></tr>
-  <tr><td colspan="2" align="center">
-  <input type="submit" value="$text{'DOWNLOAD'}" name="download">
-  </td></tr>
-  <tr><th $cb colspan="2">$text{'ARCHIVE_CONTENT'}</th></tr>
-  <tr><td colspan="2">);
+  <table class="trans keys-values" width="100%">
+  <tr><td>$text{'FILENAME'}:</td><td>$filename</td></tr>
+  <tr><td>$text{'FILESIZE'}:</td><td>$size_print</td></tr>
+  </table>
+
+  <p/><div><button type="submit" class="btn btn-success" name="download"><i class="fa fa-fw fa-download"></i> <span>$text{'DOWNLOAD'}</span></button></div>
+
+  <p/><table class="trans header" width="100%">
+  <tr><td>$text{'ARCHIVE_CONTENT'}</td></tr>
+  <tr><td>);
   &trans_archive_list_content ($file);
   print qq(</td></tr>
   </table>
@@ -71,11 +71,4 @@ print qq(
 print qq(</form>);
 print qq(</p>);
 
-print qq(<hr>);
-
-my $url = 'archive_main.cgi?';
-foreach my $mod (@array_app) {$hid_mods .= "$mod\0"}
-$hid_mods =~ s/\0$//;
-$url .= '&app='.&urlize ((scalar(@array_app) == 1) ? $array_app[0] : '' );
-
-&footer($url, $text{'MODULE_INDEX_ARCHIVE'});
+&trans_footer("admin_main.cgi?app=".(($multiple_modules)?'':$app), $text{'MODULE_ADMIN_INDEX'});

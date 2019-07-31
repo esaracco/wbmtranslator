@@ -7,99 +7,83 @@
 
 require './translator-lib.pl';
 
+my ($_success, $_error, $_info) = ('', '', '');
 my $app = $in{'app'};
 my $old_app = $in{'old_app'};
 my @rows = ();
 my %file_ref = ();
 my $have_ref = 0;
 my @langs = ();
-my $monitor = $in{'monitor'};
 my $wu = &trans_get_current_app ();
 my $config_info_file = ($config{'trans_webmin'} == 1) ?
   'config.info' : 'uconfig.info';
+my $path = &trans_get_path()."/$app";
+my $have_config = (-f "$path/$config_info_file");
 
-if ($app eq $old_app && defined ($monitor))
-{
-  &trans_set_user_var ("monitor_" . &trans_get_current_app () . "_$app", 
-    $monitor);
-}
-
-# my_get_msg ()
-# IN: -
-# OUT: the message to display or ''
+# init_msg ()
 #
-# return a state message if a action occured
+# Set success or error message.
 #
-sub my_get_msg ()
+sub init_msg ()
 {
-  my $ret = '';
-
   # creation of the new translation was ok
   if ($in{'o'} eq 'new_trans')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_NEW_TRANSLATION'}</b></p>), $in{'t'};
+    $_success = sprintf ($text{'MSG_NEW_TRANSLATION'}, $in{'t'});
   }
   # translation already exists
   elsif ($in{'o'} eq 'new_trans_exist')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_NEW_TRANSLATION_EXIST'}</b></p>),
-      $in{'t'}, $app;
+    $_error = sprintf ($text{'MSG_NEW_TRANSLATION_EXIST'}, $in{'t'}, $app);
   }
   # added new items from ref translation to translation
   elsif ($in{'o'} eq 'add_new')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_ADDED_ITEMS'}</b></p>), $in{'t'};
+    $_success = sprintf ($text{'MSG_ADDED_ITEMS'}, $in{'t'});
   }
   # removed items that do not exists in the ref translation
   elsif ($in{'o'} eq 'remove')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_REMOVED_ITEMS'}</b></p>), $in{'t'};
+    $_success = sprintf ($text{'MSG_REMOVED_ITEMS'}, $in{'t'});
   }
   # removed all this translation
   elsif ($in{'o'} eq 'remove_trans')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_REMOVED_TRANSLATION'}</b></p>), 
-      "$in{'t'}", $app;
+    $_success = sprintf ($text{'MSG_REMOVED_TRANSLATION'}, $in{'t'}, $app);
   }
   # updated translation
   elsif ($in{'o'} eq 'update_trans')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_UPDATED_TRANSLATION'}</b></p>), $in{'t'}
+    $_success = sprintf ($text{'MSG_UPDATED_TRANSLATION'}, $in{'t'});
   }
-  
-  return $ret;
 }
 
-&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, "config", 1, 0);
-print "<hr>\n";
-printf qq(<h1>$text{'MODULE_CONFIG_TITLE'}</h1>), $app;
+&trans_header ($text{'MODULE_CONFIG_TITLE'}, $app, $in{'t'});
 &trans_get_menu_icons_panel ('module_config_main', $app);
-print qq(<p>$text{'MODULE_CONFIG_DESCRIPTION1'}</p>);
+print qq(<br/>$text{'MODULE_CONFIG_DESCRIPTION1'});
 
 print qq(<p>);
 print qq(<form action="module_config_main.cgi" method="post">);
 print qq(<input type="hidden" name="old_app" value="$app">);
 print qq(<input type="hidden" name="radio_select" value="">);
-print qq(<select name="app" onChange="submit()">);
-printf qq(<option value="">$text{'SELECT_MODULE'}</option>\n);
+
 &trans_modules_list_get_options ([$app], '');
-print "</select>";
 
-print qq(<input type="submit" value="$text{'REFRESH'}">);
+if ($have_config && (my $msg = &trans_monitor_panel ($app, $in{'monitor'})))
+{
+  $_success = $msg;
+}
 
-&trans_monitor_panel ($app) if ($app ne '');
+# Set success or error msg
+&init_msg ();
 
-# display state message
-print &my_get_msg ();
-
-# if a module have been choosen
+# if a module have been selected
 if ($app ne '')
 {
   my $updated = 0;
-  my $path = &trans_get_path () . "/$app";
 
   # if there is a config.info file
-  if (-f "$path/$config_info_file")
+  if ($have_config)
   {
     print qq(<p>$text{'MODULE_CONFIG_DESCRIPTION2'}</p>);
 
@@ -158,33 +142,62 @@ if ($app ne '')
         }
     }
   
+    #TODO Code factorization (see also "interface_main.cgi")
+
+    ##FIXME useful ?
     # manage default language choice
-    &trans_get_language_reference ($have_ref, @rows, \%file_ref);
+    ##$ref_lang = 'en' if (!$have_ref);
+    ##&trans_get_language_reference ($have_ref, @rows, \%file_ref);
   
     # calculate md5 sum for each field's value
-    if ($in{'build_md5'} ne '')
+    if (defined ($in{'build_md5'}))
     {
-      my $path = &trans_get_path ($app, "config.info.$ref_lang");
-      $path = &trans_get_path ($app, 'config.info') if (! -f $path);
-      &trans_build_cache ('config', $ref_lang, $path, $app);
+      &trans_build_cache (
+        'interface',
+        $ref_lang,
+        &trans_get_path ($app, "lang/$ref_lang", 1),
+        $app,
+        1
+      );
+      &trans_build_cache (
+        'config',
+        $ref_lang,
+        &trans_get_path ($app, 'config.info', 1),
+        $app,
+        1
+      );
+
+      $_success = sprintf ($text{'MSG_FINGERPRINT_DONE'}, $ref_lang);
     }
   
     $updated = &trans_get_updated ('config', $ref_lang, $app, '');
-  
+
+    $ref_panel =
+      sprintf(qq(<button type="submit" name="build_md5" class="btn btn-%s" title="$text{'BUILD_FINGERPRINT'}"><i class="fa fa-fw fa-bolt"></i> <span>$text{'FINGERPRINT'}</span></button>), ($updated) ? 'warning' : 'success');
+
+    if ($updated)
+    {
+      $ref_panel .= "<br/><b>$updated</b> $text{'ITEMS_MODIFIED'}";
+
+      $_error = sprintf (qq(<br/>$text{'MSG_ITEMS_MODIFIED_ALERT'}),
+                  $updated, $ref_lang);
+    }
+    
     # display translation table for the selected module
     print qq(<p>);
-    print qq(<table border="0" cellspacing="2" cellpadding="2">);
-    printf qq(
-      <tr $tb>
-      <th valign="top">$text{'STATE'}</th>
-      <th valign="top">$text{'REFERENCE'}</th>
-      <th valign="top">$text{'LANGUAGE'}</th>
-      <th valign="top">$text{'MODIFIED'}</th>
-      <th valign="top">$text{'SIZE'}</th>
-      <th valign="top">$text{'ITEMS'}</th>
-      <th valign="top">$text{'ADDED_ITEMS'}</th>
-      <th valign="top">$text{'REMOVED_FROM'}</th>
-      <th valign="top">$text{'ACTION'}</th></tr>), $ref_lang, $ref_lang;
+    print qq(<table class="trans header" width="100%">);
+    print qq(
+      <tr>
+      <td>$text{'STATE'}</td>
+      <td>$text{'REFERENCE'}</td>
+      <td>$text{'LANGUAGE'}</td>
+      <td>$text{'MODIFIED'}</td>
+      <td>$text{'SIZE'}</td>
+      <td>$text{'ITEMS'}</td>
+      <td>$text{'ADDED_ITEMS'}</td>
+      <td>$text{'REMOVED_FROM'}</td>
+      <td>$text{'ACTION'}</td>
+      </tr>);
 
     foreach my $item (sort {$a->{'language'} cmp $b->{'language'}} @rows)
     {
@@ -206,11 +219,11 @@ if ($app ne '')
       # state icon
       if ($ref_lang ne $row{'language'})
       {
-        $state_icon = ($removed == 0 and $new == 0 and $updated == 0) ?
+        $state_icon = ($removed == 0 && $new == 0 && $updated == 0) ?
           qq(<img src="images/smiley_ok.png" alt="$text{'GOOD'}" 
 	    title="$text{'GOOD'}">) :
-          (($row{'count'} > 0) and 
-	    ($removed == 0 or $new == 0) and $updated == 0) ?
+          (($row{'count'} > 0) &&
+	    ($removed == 0 || $new == 0) && $updated == 0) ?
             qq(<img src="images/smiley_notbad.png" alt="$text{'NOT_SO_BAD'}" 
               title="$text{'NOT_SO_BAD'}">) :
             qq(<img src="images/smiley_bad.png" alt="$text{'BAD'}" 
@@ -228,15 +241,7 @@ if ($app ne '')
         $new_icon = 
           qq(<img src="images/bad.png" alt="$text{'BAD'}"> 
 	   <font size=1>$new</font>);
-        $new_panel = qq(<a href="module_config_view_added.cgi?app=$app&t=$row{'language'}"><img src="images/view.png" alt="$text{'VIEW'}" title="$text{'VIEW_NEW'}" border="0"></a>);
-      }
-    
-      $ref_panel =
-        "<input type=\"submit\" name=\"build_md5\" value=\"$text{'FINGERPRINT'}\">";
-      if ($updated > 0)
-      {
-        $ref_panel .=
-          "</td></tr><tr><td nowrap><font=1><b>$updated</b> $text{'ITEMS_MODIFIED'}</font>";
+        $new_panel = qq(<a href="module_config_view_added.cgi?app=$app&t=$row{'language'}"><img src="images/view.png" alt="$text{'VIEW'}" title="$text{'VIEW_NEW'}"></a>);
       }
     
       # disappeared items
@@ -251,29 +256,24 @@ if ($app ne '')
           qq(<img src="images/bad.png" alt="$text{'BAD'}"> 
 	    <font size=1>$removed</font>);
         $removed_panel = 
-          qq(<a href="module_config_view_removed.cgi?app=$app&t=$row{'language'}"><img src="images/view.png" alt="$text{'VIEW'}" title="$text{'VIEW_REMOVED'}" border=0></a>);
+          qq(<a href="module_config_view_removed.cgi?app=$app&t=$row{'language'}"><img src="images/view.png" alt="$text{'VIEW'}" title="$text{'VIEW_REMOVED'}"></a>);
       }
   
       printf qq(
-        <tr %s>
-        <th valign="top">%s</th>
-        <td align="center" valign="top"><table border=0 cellspacing=0 cellpadding=0><tr><td nowrap>%s</td></tr></table></td>
-        <td valign="top"><b>%s</b></td>
-	<td valign="top">%s</td>
-	<td valign="top" nowrap>%s</td>
-	<td valign="top">%s</td>
-        <td valign="top"><table border="0" width="100%"><tr>
-        <td valign="center" nowrap>%s</td><td align="right">%s</td>
-        </tr></table></td>
-	<td valign="top"><table border="0" width="100%"><tr>
-        <td valign="center" nowrap>%s</td><td align="right">%s</td>
-        </tr></table></td>
-	<td valign="top"><table border="0" width="100%"><tr>
-        <td align="center" nowrap><a href="module_config_edit.cgi?app=$app&t=$row{'language'}"><img src="images/edit.png" alt="$text{'EDIT'}" 
-          title="$text{'EDIT_TRANSLATION_FILE'}" border=0></a>
-        </td></tr></table></td></tr>\n), 
-        ($ref_lang eq $row{'language'}) ? ' bgcolor="cornflowerblue"' : 
-	  ($row{'modified'}) ? $cb : ' bgcolor="pink"',
+        <tr%s>
+        <td align=center>%s</td>
+        <td align="center" nowrap>%s</td>
+        <td><b>%s</b></td>
+	<td align=center>%s</td>
+	<td nowrap>%s</td>
+	<td>%s</td>
+        <td valign=center nowrap>%s %s</td>
+	<td valign=center nowrap>%s %s</td>
+	<td align=center nowrap><a href="module_config_edit.cgi?app=$app&t=$row{'language'}"><img src="images/edit.png" alt="$text{'EDIT'}" 
+          title="$text{'EDIT_TRANSLATION_FILE'}"></a>
+        </td></tr>),
+        ($ref_lang eq $row{'language'}) ? ' class="selected"' : 
+	  ($row{'modified'}) ? '' : ' class="modified"',
         $state_icon,
 	($row{'reference'} == 1) ? $ref_panel : '',
         $row{'language'}, 
@@ -294,11 +294,10 @@ if ($app ne '')
   # if there is no config.info file
   else
   {
-    print qq(<p><b>$text{'MODULE_CONFIG_NOEXIST'}</b></p>);
+    $_error = $text{'MODULE_CONFIG_NOEXIST'};
   }
 }
 print qq(</form>);
 print qq(</p>);
 
-print qq(<hr>);
-&footer("", $text{'MODULE_INDEX'});
+&trans_footer ('', $text{'MODULE_INDEX'}, $_success, $_error, $_info);

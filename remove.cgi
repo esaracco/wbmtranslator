@@ -16,7 +16,7 @@ my $finfo = (&trans_is_theme ($app)) ? 'theme' : 'module';
 ##### POST action #####
 #
 # remove translation
-if ($in{'remove'} ne '')
+if (defined ($in{'remove'}))
 {
   # remove lang files
   if ($target eq 'all' || $target eq 'all_webmin' || $target eq 'lang')
@@ -100,50 +100,48 @@ if ($in{'remove'} ne '')
 #
 ########################
 
-&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, undef, 1, 0);
-print "<hr>\n";
+&trans_header ($text{'REMOVE_TRANSLATION_TITLE'}, $app, $lang);
 
-printf qq(<h1>$text{'REMOVE_TRANSLATION_TITLE'}</h1>), $app;
-
+print qq(<br/>);
 if ($target eq 'all')
 {
   ($webmin_lang ne '') ?
-    printf qq(<p>$text{'REMOVE_TRANSLATION_SPECIAL_DESCRIPTION'}</p>), $lang, $lang, $lang :
-    printf qq(<p>$text{'REMOVE_TRANSLATION_DESCRIPTION_ALL'}</p>), $lang, $lang, $lang, $lang, $app;
+    printf ($text{'REMOVE_TRANSLATION_SPECIAL_DESCRIPTION'}, $lang, $lang, $lang) :
+    printf ($text{'REMOVE_TRANSLATION_DESCRIPTION_ALL'}, $lang, $lang, $lang, $lang, $app);
 }
 elsif ($target eq 'all_webmin')
 {
   ($webmin_lang ne '') ?
-    printf qq(<p>$text{'REMOVE_TRANSLATION_SPECIAL_DESCRIPTION'}</p>), $lang, $lang, $lang :
-    printf qq(<p>$text{'REMOVE_TRANSLATION_DESCRIPTION'}</p>), $lang, $lang, $lang, $app;
+    printf ($text{'REMOVE_TRANSLATION_SPECIAL_DESCRIPTION'}, $lang, $lang, $lang) :
+    printf ($text{'REMOVE_TRANSLATION_DESCRIPTION'}, $lang, $lang, $lang, $app);
 }
 elsif ($target eq 'all_usermin')
 {
-    printf qq(<p>$text{'REMOVE_TRANSLATION_DESCRIPTION_USERMIN'}</p>), $lang, $lang, $lang, $app;
+  printf ($text{'REMOVE_TRANSLATION_DESCRIPTION_USERMIN'}, $lang, $lang, $lang, $app);
 }
 elsif ($target eq 'lang')
 {
-    printf qq(<p>$text{'REMOVE_TRANSLATION_DESCRIPTION_LANG'}</p>), $lang, $lang, $lang, $app;
+  printf ($text{'REMOVE_TRANSLATION_DESCRIPTION_LANG'}, $lang, $app);
 }
 elsif ($target eq 'ulang')
 {
-    printf qq(<p>$text{'REMOVE_TRANSLATION_DESCRIPTION_ULANG'}</p>), $lang, $lang, $lang, $app;
+  printf ($text{'REMOVE_TRANSLATION_DESCRIPTION_ULANG'}, $lang, $app);
 }
 elsif ($target eq 'module_info')
 {
-    printf qq(<p>$text{'REMOVE_TRANSLATION_DESCRIPTION_MODULE_INFO'}</p>), $lang, $lang, $app;
+  printf ($text{'REMOVE_TRANSLATION_DESCRIPTION_MODULE_INFO'}, $lang, $lang, $app);
 }
 elsif ($target eq 'config_info')
 {
-    printf qq(<p>$text{'REMOVE_TRANSLATION_DESCRIPTION_CONFIG_INFO'}</p>), $lang, $lang, $app;
+  printf ($text{'REMOVE_TRANSLATION_DESCRIPTION_CONFIG_INFO'}, $lang, $lang, $app);
 }
 elsif ($target eq 'umodule_info')
 {
-    printf qq(<p>$text{'REMOVE_TRANSLATION_DESCRIPTION_UMODULE_INFO'}</p>), $lang, $lang, $app;
+  printf ($text{'REMOVE_TRANSLATION_DESCRIPTION_UMODULE_INFO'}, $lang, $lang, $app);
 }
 elsif ($target eq 'uconfig_info')
 {
-    printf qq(<p>$text{'REMOVE_TRANSLATION_DESCRIPTION_UCONFIG_INFO'}</p>), $lang, $lang, $app;
+  printf ($text{'REMOVE_TRANSLATION_DESCRIPTION_UCONFIG_INFO'}, $lang, $lang, $app);
 }
 
 print qq(<form action="remove.cgi" method="post">);
@@ -152,8 +150,7 @@ print qq(<input type="hidden" name="t" value="$lang">);
 print qq(<input type="hidden" name="c" value="$target">);
 print qq(<input type="hidden" name="webmin_lang" value="$webmin_lang">);
 print qq(<input type="hidden" name="referer" value="$in{'referer'}">);
-print qq(<p><input type="submit" name="remove" value="$text{'REMOVE_TRANSLATION'}"></p>);
+print qq(<p/><div><button type="submit" name="remove" class="btn btn-danger"><i class="fa fa-fw fa-trash"></i> <span>$text{'REMOVE_TRANSLATION'}</span></button></div>);
 print qq(</form>);
 
-print qq(<hr>);
-&footer("$in{'referer'}.cgi?app=$app&webmin_lang=$webmin_lang", $text{'PREVIOUS'});
+&trans_footer("$in{'referer'}.cgi?app=$app&webmin_lang=$webmin_lang", $text{'PREVIOUS'});

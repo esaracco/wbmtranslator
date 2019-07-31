@@ -7,9 +7,6 @@
 
 require './translator-lib.pl';
 
-my $remove = $in{'remove'};
-my $ret = '';
-
 @links = (
   'admin_main.cgi',
   'interface_main.cgi',
@@ -37,16 +34,30 @@ my $ret = '';
   'images/send.png'
 );
 
-# remove app from monitor
-&trans_set_user_var ("monitor_" . &trans_get_current_app () . "_$remove", 0) if ($remove ne '');
-
-&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, "help", 1, 1, 0, undef, undef, undef, "<img src='images/icon.gif'/><br/><a href=\"https://wbmtranslator.esaracco.fr\" target=\"_BLANK\">$text{'PROJECT_HOMEPAGE'}</a>&nbsp;|&nbsp;<a href=\"http://download.webmin.com/devel/tarballs/\" target=\"_BLANK\">$text{'LATEST_WEBMIN'}</a>");
-print "<hr>\n";
-
+&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, 'index', 1, 1, 0, undef, undef, undef, "<img src='images/icon.gif'/><br/><a href=\"https://wbmtranslator.esaracco.fr\" target=\"_BLANK\">$text{'PROJECT_HOMEPAGE'}</a>&nbsp;|&nbsp;<a href=\"http://download.webmin.com/devel/tarballs/\" target=\"_BLANK\">$text{'LATEST_WEBMIN'}</a>");
+&trans_header_extra ();
 &trans_main_check_config ();
 &trans_check_perl_deps ();
 
+# Warn user when a new wbmclamav release is available
+if ($ENV{'HTTP_REFERER'} !~ /$module_name\/[a-z]/i &&
+    $config{'trans_check_new'} &&
+    (my $v = &trans_check_new_release()))
+{
+  &trans_display_msg (
+    sprintf ($text{'NEW_RELEASE_AVAILABLE'}, $v, $v), 'info', 'bell');
+}
+
 print qq(<form action="index.cgi" method="post">);
+
+if ((my $ret = &trans_monitor_news ()) ne '')
+{
+  $ret = qq(
+      <p align=center>$text{'MONITOR_NEWS'}</p>
+      <br/><table class="trans header" style="margin:auto">$ret</table>);
+  $ret =~ s/\n/ /g;
+  &trans_display_msg ($ret, 'info', 'bell');
+}
 
 print qq(<p>$text{'INDEX_DESCRIPTION'}</p>\n);
 
@@ -54,28 +65,10 @@ print qq(<p>$text{'IMPORTANT_NOTICE'}</p>);
 
 print qq(<p>$text{'MOD_NOT_AVAIL_NOTICE'}</p>);
 
-if (($ret = &trans_monitor_news ()) ne '')
-{
-  print qq(
-  <p>
-  <table align="center" cellspacing="5" cellpadding="10" width="40%" style="background: silver;font-size: 10px;font-family: Verdana, Arial, Helvetica, sans-serif;color: black;border: 2px blue solid;">
-  <tr><td>$text{'MONITOR_NEWS'}</td></tr>
-  <tr><td align="center">
-  <table border=1 style="background: silver;font-size: 10px;font-family: Verdana, Arial, Helvetica, sans-serif;color: black;border: 1px black solid;">
-  $ret
-  </table>
-  </td></tr>
-  </table>
-  </p>
-    );
-}
+print qq(</form>);
 
-print qq(<form>);
-
-print qq(<p>);
-&icons_table (\@links, \@titles, \@icons);
-print qq(</p>);
+print qq(<p>);&icons_table (\@links, \@titles, \@icons);print qq(</p>);
 
 print qq(<hr/>);
-&trans_footer ();
-&footer("/", $text{'index'});
+print qq(<p><i>wbmtranslator</i> <b>$module_info{'version'}</b></p>);
+&footer ('/', $text{'index'});

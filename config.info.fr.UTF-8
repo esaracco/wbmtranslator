@@ -1,4 +1,5 @@
 line_global=Section globale,11
+trans_check_new=M'avertir quand une nouvelle version du module est disponible,1,1-Oui,0-Non
 trans_webmin=Traduction de:,1,1-Webmin,0-Usermin
 trans_working_path=Répertoire de travail,7
 line_email=Courrier,11

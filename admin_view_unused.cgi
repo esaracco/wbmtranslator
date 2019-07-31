@@ -7,6 +7,7 @@
 
 require './translator-lib.pl';
 
+my ($_success, $_error, $_info) = ('', '', '');
 my $app = $in{'app'};
 my $search_type = $in{'search_type'};
 my %unused = &trans_get_unused ($search_type, $ref_lang, $app);
@@ -26,7 +27,7 @@ sub _purge_items ( $ $ $ )
 ##### POST actions #####
 #
 # remove unused items
-if ($in{'remove'} ne '')
+if (defined ($in{'remove'}))
 {
   my $path_lang = &trans_get_path ($app);
   my %fcontent;
@@ -56,32 +57,28 @@ if ($in{'remove'} ne '')
 #
 ########################
 
-&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, undef, 1, 0);
-print "<hr>\n";
+&trans_header ($text{'VIEW_UNUSED_TITLE'}, $app);
+printf (qq(<br/>$text{'VIEW_UNUSED_DESCRIPTION'}), $app);
 
-print qq(<h1>$text{'VIEW_UNUSED_TITLE'}</h1>);
-printf qq(<p>$text{'VIEW_UNUSED_DESCRIPTION'}</p>), $app;
-print qq(<p><b>$text{'VIEW_UNUSED_WARNING'}</b></p>);
+$_info = $text{'VIEW_UNUSED_WARNING'};
 
 print qq(<p>);
 print qq(<form action="admin_view_unused.cgi" method="post">);
 print qq(<input type="hidden" name="app" value="$app">);
 print qq(<input type="hidden" name="search_type" value="$search_type">);
 print qq(<input type="hidden" name="referer" value="$in{'referer'}">);
-print qq(<table border=0 cellspacing=2 cellpadding=2>);
+print qq(<table class="trans keys-values">);
 foreach my $key (sort keys %unused)
 {
   print qq(
-    <tr><td $tb colspan=2><b>$key</b> :</td></tr>
-    <tr><td $cb>[<b>$ref_lang</b>]</td><td><code>);
+    <tr><td>$key:</td><td>);
   print &html_escape ($unused{"$key"});
-  print qq(</code></td></tr>);
+  print qq(</td></tr>);
 }
 print qq(</table>);
 
-print qq(<p><input type="submit" name="remove" value="$text{'REMOVED_FROM_TRANSLATION_FILE'}"></p>);
+print qq(<p/><div><button type="submit" class="btn btn-danger ui_form_end_submit" name="remove"><i class="fa fa-fw fa-trash"></i> <span>$text{'REMOVED_FROM_TRANSLATION_FILE'}</span></button></div>);
 print qq(</form>);
 print qq(</p>);
 
-print qq(<hr>);
-&footer("$in{'referer'}.cgi?app=$app", $text{'PREVIOUS'});
+&trans_footer("$in{'referer'}.cgi?app=$app", $text{'PREVIOUS'}, $_success, $_error, $_info);

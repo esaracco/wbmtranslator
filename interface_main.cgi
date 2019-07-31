@@ -7,89 +7,76 @@
 
 require './translator-lib.pl';
 
+my ($_success, $_error, $_info) = ('', '', '');
 my $app = $in{'app'};
 my $old_app = $in{'old_app'};
 my @rows = ();
 my %file_ref = ();
 my $have_ref = 0;
 my $webmin_lang = $in{'webmin_lang'};
-my $monitor = $in{'monitor'};
 my $wu = &trans_get_current_app ();
+my $basic_webmin = ($app eq 'webmin' && (!$webmin_lang || $webmin_lang eq 'lang'));
 
-if ($old_app eq $app)
-{
-  &trans_set_user_var ("monitor_" . &trans_get_current_app () . "_$app", 
-    $monitor);
-}
-
-# my_get_msg ()
-# IN: -
-# OUT: the message to display or ''
+# init_msg ()
 #
-# return a state message if a action occured
+# set success or error message.
 #
-sub my_get_msg ()
+sub init_msg ()
 {
-  my $ret = '';
-
   # creation of the new translation was ok
   if ($in{'o'} eq 'new_trans')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_NEW_TRANSLATION'}</b></p>), $in{'t'};
+    $_success = sprintf ($text{'MSG_NEW_TRANSLATION'}, $in{'t'});
   }
   # translation already exists
   elsif ($in{'o'} eq 'new_trans_exist')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_NEW_TRANSLATION_EXIST'}</b></p>), 
-      $in{'t'}, $app;
+    $_error = sprintf ($text{'MSG_NEW_TRANSLATION_EXIST'}, $in{'t'}, $app);
   }
   # added new items from ref translation to translation
   elsif ($in{'o'} eq 'add_new')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_ADDED_ITEMS'}</b></p>), $in{'t'};
+    $_success = sprintf ($text{'MSG_ADDED_ITEMS'}, $in{'t'});
+  }
+  # added new items from ref translation to translation
+  elsif ($in{'o'} eq 'add_new_none')
+  {
+    $_error = sprintf ($text{'MSG_ADDED_ITEMS_NONE'}, $in{'t'});
   }
   # removed items that do not exists in the ref translation
   elsif ($in{'o'} eq 'remove')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_REMOVED_ITEMS'}</b></p>), $in{'t'};
+    $_success = sprintf ($text{'MSG_REMOVED_ITEMS'}, $in{'t'});
   }
   # removed all this translation
   elsif ($in{'o'} eq 'remove_trans')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_REMOVED_TRANSLATION'}</b></p>), 
-      "$in{'t'}", $app;
+    $_success = sprintf ($text{'MSG_REMOVED_TRANSLATION'}, $in{'t'}, $app);
   }
   # updated translation
   elsif ($in{'o'} eq 'update_trans')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_UPDATED_TRANSLATION'}</b></p>), 
-      $in{'t'};
+    $_success = sprintf ($text{'MSG_UPDATED_TRANSLATION'}, $in{'t'});
   }
-
-  return $ret;
 }
 
-&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, undef, 1, 0);
-print "<hr>\n";
-
-($webmin_lang ne '') ?
-  printf qq(<h1>$text{'INTERFACE_SPECIAL_TITLE'}</h1>),
-    ($webmin_lang eq 'lang') ? 'lang' : 'webmin/lang' :
-  printf qq(<h1>$text{'INTERFACE_TITLE'}</h1>), $app;
+&trans_header (($webmin_lang ne '') ?
+  sprintf ($text{'INTERFACE_SPECIAL_TITLE'},
+    ($webmin_lang eq 'lang') ? 'lang' : 'webmin/lang') :
+    $text{'INTERFACE_TITLE'}, $app, $in{'t'});
 &trans_get_menu_icons_panel ('interface_main', $app);
-print qq(<p>$text{'INTERFACE_DESCRIPTION1'}</p>);
+print qq(<br>$text{'INTERFACE_DESCRIPTION1'});
 
 print qq(<p>);
 print qq(<form action="interface_main.cgi" method="post">);
 print qq(<input type="hidden" name="old_app" value="$app">);
-print qq(<select name="app" onChange="submit()">);
-printf qq(<option value="">$text{'SELECT_MODULE'}</option>\n);
+
 &trans_modules_list_get_options ([$app], '');
-print "</select>";
 
-print qq(<input type="submit" value="$text{'REFRESH'}">);
-
-&trans_monitor_panel ($app) if ($app ne '');
+if (my $msg = &trans_monitor_panel ($app, $in{'monitor'}, $basic_webmin))
+{
+  $_success = $msg;
+}
 
 if ($app eq 'webmin')
 {
@@ -97,27 +84,23 @@ if ($app eq 'webmin')
 
   print "<p>
     <select name=webmin_lang onChange=\"submit()\">
-      <option value=webmin_lang" . 
-      (($webmin_lang eq 'webmin_lang') ? ' selected="selected"' : '') . 
-      ">webmin/lang/</option>
       <option value=lang" .
       (($webmin_lang eq 'lang') ? ' selected="selected"' : '') .
       ">lang/</option>
+      <option value=webmin_lang" . 
+      (($webmin_lang eq 'webmin_lang') ? ' selected="selected"' : '') . 
+      ">webmin/lang/</option>
     </select>
   </p>"
 }
 
-# display state message
-print &my_get_msg ();
+# Set success or error msg
+&init_msg ();
 
 if ($app ne '')
 {
-  my $basic_webmin = ($app eq 'webmin' and $webmin_lang eq 'lang');
   my $updated = 0;
   my $path = &trans_get_path ($app, 'lang/');
-  my $md5_file =  
-    "/$config{'trans_working_path'}/.translator/$remote_user/monitoring/$wu/" .
-    "fingerprints/\%s-interface_\%s";
 
   if ($basic_webmin)
   {
@@ -129,7 +112,7 @@ if ($app ne '')
   print qq(<p>$text{'FINGERPRINT_DESCRIPTION'}</p>);
   
   #seach for all translation files for the selected module
-  if (opendir (DIR, "$path"))
+  if (opendir (DIR, $path))
   {
     foreach my $item (readdir (DIR))
     {
@@ -156,34 +139,61 @@ if ($app ne '')
     }
     closedir (DIR);
   
+    #TODO Code factorization (see also "module_config_main.cgi")
+
+    ##FIXME useful ?
     # manage default language choice
-    $ref_lang = 'en' if (!$have_ref);
-    &trans_get_language_reference ($have_ref, @rows, \%file_ref);
+    ##$ref_lang = 'en' if (!$have_ref);
+    ##&trans_get_language_reference ($have_ref, @rows, \%file_ref);
   
     # calculate md5 sum for each field's value
-    if ($in{'build_md5'} ne '')
+    if (defined ($in{'build_md5'}))
     {
-      &trans_build_cache ('interface', $ref_lang, 
-        &trans_get_path ($app, "lang/$ref_lang", $basic_webmin), $app, 
-	  $basic_webmin);
+      &trans_build_cache (
+        'interface',
+        $ref_lang,
+        &trans_get_path ($app, "lang/$ref_lang", $basic_webmin),
+        $app, 
+	$basic_webmin
+      );
+      &trans_build_cache (
+        'config',
+        $ref_lang,
+        &trans_get_path ($app, 'config.info', $basic_webmin),
+        $app,
+        $basic_webmin
+      );
+
+      $_success = sprintf ($text{'MSG_FINGERPRINT_DONE'}, $ref_lang);
     }
         
     $updated = &trans_get_updated ('interface', $ref_lang, $app, $basic_webmin);
-  
+
+    my $ref_panel =
+      sprintf(qq(<button type="submit" name="build_md5" class="btn btn-%s" title="$text{'BUILD_FINGERPRINT'}"><i class="fa fa-fw fa-bolt"></i> <span>$text{'FINGERPRINT'}</span></button>), ($updated) ? 'warning' : 'success');
+
+    if ($updated)
+    {
+      $ref_panel .= "<br/><b>$updated</b> $text{'ITEMS_MODIFIED'}";
+
+      $_error = sprintf (qq(<br/>$text{'MSG_ITEMS_MODIFIED_ALERT'}),
+                  $updated, $ref_lang);
+    }
+
     # display translation table for the selected module
     print qq(<p>);
-    print qq(<table border="0" cellspacing="2" cellpadding="2">);
+    print qq(<table class="trans header" width="100%">);
     print qq(
-      <tr $tb>
-      <th valign="top">$text{'STATE'}</th>
-      <th valign="top">$text{'REFERENCE'}</th>
-      <th valign="top">$text{'LANGUAGE'}</th>
-      <th valign="top">$text{'MODIFIED'}</th>
-      <th valign="top">$text{'SIZE'}</th>
-      <th valign="top">$text{'ITEMS'}</th>
-      <th valign="top">$text{'ADDED_ITEMS'}</th>
-      <th valign="top">$text{'REMOVED_FROM'}</th>
-      <th valign="top">$text{'ACTION'}</th>
+      <tr>
+      <td>$text{'STATE'}</td>
+      <td>$text{'REFERENCE'}</td>
+      <td>$text{'LANGUAGE'}</td>
+      <td>$text{'MODIFIED'}</td>
+      <td>$text{'SIZE'}</td>
+      <td>$text{'ITEMS'}</td>
+      <td>$text{'ADDED_ITEMS'}</td>
+      <td>$text{'REMOVED_FROM'}</td>
+      <td>$text{'ACTION'}</td>
       </tr>);
     
     foreach my $item (sort {$a->{'language'} cmp $b->{'language'}} @rows)
@@ -197,8 +207,6 @@ if ($app ne '')
       my $new_panel = '';
       my $removed_icon = '';
       my $removed_panel = '';
-      my $ref_panel = '';
-      my $file_panel = '';
   
       $new = 
         &trans_get_diff_new ($ref_lang, $row{'language'}, \%file_ref, \%file);
@@ -208,11 +216,11 @@ if ($app ne '')
       # state icon
       if ($ref_lang ne $row{'language'})
       {
-        $state_icon = ($removed == 0 and $new == 0 and $updated == 0) ?
+        $state_icon = ($removed == 0 && $new == 0 && $updated == 0) ?
           qq(<img src="images/smiley_ok.png" alt="$text{'GOOD'}" 
             title="$text{'GOOD'}">) :
-          (($row{'count'} > 0) and ($removed == 0 or $new == 0) 
-  	  and $updated == 0) ?
+          (($row{'count'} > 0) &&
+            ($removed == 0 || $new == 0) && $updated == 0) ?
               qq(<img src="images/smiley_notbad.png" alt="$text{'NOT_SO_BAD'}" 
                 title="$text{'NOT_SO_BAD'}">) :
              qq(<img src="images/smiley_bad.png" alt="$text{'BAD'}" 
@@ -230,14 +238,8 @@ if ($app ne '')
         $new_icon = 
           qq(<img src="images/bad.png" alt="$text{'BAD'}"> 
   	  <font size=1>$new</font>);
-        $new_panel = qq(<a href="interface_edit_added.cgi?app=$app&t=$row{'language'}&webmin_lang=$webmin_lang"><img src="images/edit.png" alt="$text{'EDIT'}" title="$text{'TRANSLATE_NEW'}" border="0"></a>);
+        $new_panel = qq(<a href="interface_edit_added.cgi?app=$app&t=$row{'language'}&webmin_lang=$webmin_lang"><img src="images/edit.png" alt="$text{'EDIT'}" title="$text{'TRANSLATE_NEW'}"></a>);
       }
-    
-      $ref_panel =
-        qq(<input type="submit" name="build_md5" value="$text{'FINGERPRINT'}">);
-      $ref_panel .=
-        qq(</td></tr><tr><td nowrap><font=1><b>$updated</b> 
-          $text{'ITEMS_MODIFIED'}</font>) if ($updated > 0);
     
       # disappeared items
       if ($removed == 0)
@@ -251,27 +253,22 @@ if ($app ne '')
           qq(<img src="images/bad.png" alt="$text{'BAD'}"> 
   	  <font size=1>$removed</font>);
         $removed_panel = 
-          qq(<a href="interface_view_removed.cgi?referer=interface_main&app=$app&t=$row{'language'}&webmin_lang=$webmin_lang"><img src="images/view.png" alt="$text{'VIEW'}" title="$text{'VIEW_REMOVED'}" border=0></a><a href="interface_view_removed.cgi?referer=interface_main&remove=1&app=$app&t=$row{'language'}&webmin_lang=$webmin_lang"><img src="images/delete.png" alt="$text{'DELETE'}" title="$text{'DELETE_REMOVED'}" border=0></a>);
+          qq(<a href="interface_view_removed.cgi?referer=interface_main&app=$app&t=$row{'language'}&webmin_lang=$webmin_lang"><img src="images/view.png" alt="$text{'VIEW'}" title="$text{'VIEW_REMOVED'}"></a><a href="interface_view_removed.cgi?referer=interface_main&remove=1&app=$app&t=$row{'language'}&webmin_lang=$webmin_lang"><img src="images/delete.png" alt="$text{'DELETE'}" title="$text{'DELETE_REMOVED'}"></a>);
       }
   
       printf qq(
-        <tr %s>
-        <th valign="top">%s</th>
-        <td align="center" valign="top"><table border=0 cellspacing=0 cellpadding=0><tr><td nowrap>%s</td></tr></table></td>
-        <td valign="top"><b>%s</b></td>
-        <td valign="top">%s</td>
-        <td valign="top" nowrap>%s</td>
-        <td valign="top">%s</td>
-        <td valign="top"><table border="0" width="100%"><tr>
-        <td valign="center" nowrap>%s</td><td align="right">%s</td>
-        </tr></table></td>
-        <td valign="top"><table border="0" width="100%"><tr>
-        <td valign="center" nowrap>%s</td><td align="right">%s</td>
-        </tr></table></td>
-        <td valign="top"><table border="0" width="100%"><tr>
-        <td align="right">%s%s
-        </td></tr></table></td></tr>\n), 
-        ($ref_lang eq $row{'language'}) ? ' bgcolor="cornflowerblue"' : $cb,
+        <tr%s>
+        <td align=center>%s</td>
+        <td align=center>%s</td>
+        <td><b>%s</b></td>
+        <td align=center>%s</td>
+        <td nowrap>%s</td>
+        <td>%s</td>
+        <td nowrap>%s %s</td>
+        <td nowrap>%s %s</td>
+        <td nowrap>%s%s</td></tr>\n), 
+        ($ref_lang eq $row{'language'}) ? ' class="selected"' :
+          ($row{'modified'}) ? '' : ' class="modified"',
         $state_icon,
         ($row{'reference'} == 1) ? $ref_panel : '',
         $row{'language'}, 
@@ -284,11 +281,11 @@ if ($app ne '')
         $removed_panel,
         ($row{'count'} > 0) ?
           sprintf qq(<a href="interface_edit.cgi?app=$app&t=$row{'language'}&webmin_lang=$webmin_lang"><img src="images/edit.png" alt="$text{'EDIT'}"
-            title="$text{'EDIT_TRANSLATION_FILE'}" border=0></a>), 
+            title="$text{'EDIT_TRANSLATION_FILE'}"></a>), 
   	  $row{'language'} : qq(<img src="images/empty.png">),
         ($ref_lang ne $row{'language'}) ?
-          sprintf qq(<a href="remove.cgi?referer=interface_main&app=$app&t=$row{'language'}&webmin_lang=$webmin_lang"><img src="images/delete.png" alt="$text{'DELETE'}" 
-  	  title="$text{'DELETE_TRANSLATION'}" border=0></a>), 
+          sprintf qq(<a href="remove.cgi?referer=interface_main&app=$app&t=$row{'language'}&webmin_lang=$webmin_lang&c=lang"><img src="images/delete.png" alt="$text{'DELETE'}" 
+  	  title="$text{'DELETE_TRANSLATION'}"></a>), 
   	  $row{'language'} : qq(<img src="images/empty.png">)
         ;
     }
@@ -304,5 +301,4 @@ if ($app ne '')
 print qq(</form>);
 print qq(</p>);
 
-print qq(<hr>);
-&footer("", $text{'MODULE_INDEX'});
+&trans_footer ('', $text{'MODULE_INDEX'}, $_success, $_error, $_info);

@@ -17,6 +17,8 @@ require "$root_directory/$module_name/data/reverso_languages.pm";
 my $color = 'blue';
 my $translation = '';
 
+print qq(Content-Type: text/html; charset=utf-8\n\n);
+
 ##### POST actions #####
 #
 # do the translation
@@ -37,6 +39,7 @@ if ($in{'translate'})
   $ua->default_headers->header (
     'Content-type' => 'application/json',
     'Accept' => 'application/json',
+    'Accept-Charset' => 'utf-8',
     'Connection' => 'close',
     'Referer' => 'https://http://www.reverso.net/text_translation.aspx',
     'User-Agent' =>
@@ -48,7 +51,7 @@ if ($in{'translate'})
   my $r = $ua->request ($req);
   if ($r->is_success)
   {
-    my $data = from_json ($r->decoded_content);
+    my $data = from_json ($r->decoded_content, {'utf8' => 1});
     $translation = $data->{'d'}{'result'};
   }
   else
@@ -65,20 +68,21 @@ else
 #
 ########################
 
-print qq(Content-Type: text/html; charset=UTF-8\n\n);
-
-print qq(
+printf (qq(
+<!DOCTYPE HTML>
   <html>
     <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
       <title>$text{'TRANSLATE_CONSOLE_LINK'}</title>
+      %s
     </head>
-    <body>);
+    <body>), &trans_header_extra());
+
 print qq(<form action="translate_popup.cgi" method="post">);
 
-print qq(<table border=1 cellspacing=2 cellpadding=2>);
+print qq(<table class="trans" width="100%">);
 
-print qq(<tr><td $cb>);
+print qq(<tr><td>);
 
 print qq(<select name="lang1">);
 foreach my $lang (sort keys (%reverso_langs))
@@ -99,7 +103,7 @@ foreach my $lang (sort keys (%reverso_langs))
 }
 print qq(</select>);
 
-print qq(&nbsp;<input type="submit" value="$text{'TRANSLATE'}" name="translate"> <small>(<a href="http://www.reverso.net/text_translation.aspx" target="_BLANK">Reverso.net</a>)</small></td></tr>);
+print qq(&nbsp;<input type="submit" value="$text{'TRANSLATE'}" name="translate"> <small>(<a href="http://www.reverso.net/text_translation.aspx" target="_blank">Reverso.net</a>)</small></td></tr>);
 if ($translation)
 {
   print qq(<tr><td><font color="$color"><code>); 
@@ -107,7 +111,7 @@ if ($translation)
   print &html_escape ($translation);
   print qq(</code></font></td></tr>);
 }
-print '<tr><td><textarea name="text" cols="77" rows="18">',&html_escape($in{'text'}),'</textarea></td></tr>';
+print '<tr><td><textarea name="text" rows=18>',&html_escape($in{'text'}),'</textarea></td></tr>';
 print qq(</table>);
 
 print qq(</form>);

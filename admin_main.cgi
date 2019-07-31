@@ -7,126 +7,120 @@
 
 require './translator-lib.pl';
 
+my ($_success, $_error, $_info) = ('', '', '');
 my $app = $in{'app'};
 my $old_app = $in{'old_app'};
 my $lang = ($in{'lang'} eq '') ? $ref_lang : $in{'lang'};
 my $search_type = $in{'search_type'};
 my $target = $in{'target'};
 my $dir = ();
-my $monitor = $in{'monitor'};
 
-if ($old_app eq $app)
-{
-  &trans_set_user_var ("monitor_" . &trans_get_current_app () . "_$app",
-    $monitor);
-}
-
-# my_get_msg ()
-# IN: -
-# OUT: the message to display or ''
+# init_msg ()
 #
-# return a state message if a action occured
+# Set success or error message.
 # 
-sub my_get_msg ()
+sub init_msg ()
 {
-  my $ret = '';
-  
   # creation of the new translation was ok
   if ($in{'o'} eq 'new_trans')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_NEW_TRANSLATION'}</b></p>), $in{'t'};
+    $_success = sprintf ($text{'MSG_NEW_TRANSLATION'}, $in{'t'});
   }
   # translation already exists
   elsif ($in{'o'} eq 'new_trans_exist')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_NEW_TRANSLATION_EXIST'}</b></p>), 
-      $in{'t'}, $app;
+    $_error = sprintf ($text{'MSG_NEW_TRANSLATION_EXIST'}, $in{'t'}, $app);
   }
+  # no language
+  elsif ($in{'o'} eq 'new_trans_bad_no_language')
+  {
+    $_error = sprintf ($text{'MSG_NEW_TRANSLATION_BAD_NO_LANGUAGE'}, $in{'t'});
+  }
+
   # language does not exists
   elsif ($in{'o'} eq 'new_trans_bad_not_exists')
   {
-    $ret =
-      sprintf qq(<p><b>$text{'MSG_NEW_TRANSLATION_BAD_NOT_EXISTS'}</b></p>), 
-        $in{'t'};
+    $_error = sprintf ($text{'MSG_NEW_TRANSLATION_BAD_NOT_EXISTS'}, $in{'t'});
   }
   # new language is not compatible with current
   elsif ($in{'o'} eq 'new_trans_bad_compat')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_NEW_TRANSLATION_BAD_COMPAT'}</b></p>), 
-      $in{'t'}, $current_lang;
+    $_error = sprintf ($text{'MSG_NEW_TRANSLATION_BAD_COMPAT'},
+                $in{'t'}, $current_lang);
   }
   # problem when created translation
   elsif ($in{'o'} eq 'new_trans_bad')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_NEW_TRANSLATION_BAD'}</b></p>), 
-      $in{'t'}, $app;
+    $_error = sprintf ($text{'MSG_NEW_TRANSLATION_BAD'}, $in{'t'}, $app);
   }
   # added new items from ref translation to translation
   elsif ($in{'o'} eq 'add_new')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_ADDED_ITEMS'}</b></p>), $in{'t'};
+    $_success = sprintf ($text{'MSG_ADDED_ITEMS'}, $in{'t'});
   }
   # removed items that do not exists in the ref translation
   elsif ($in{'o'} eq 'remove')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_REMOVED_ITEMS'}</b></p>), $in{'t'};
+    $_success = sprintf (text{'MSG_REMOVED_ITEMS'}, $in{'t'});
   }
   # removed all this translation
   elsif ($in{'o'} eq 'remove_trans')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_REMOVED_TRANSLATION'}</b></p>), 
-      "$in{'t'}", $app;
+    $_success = sprintf ($text{'MSG_REMOVED_TRANSLATION'}, $in{'t'}, $app);
   }
   # removed all unused items
   elsif ($in{'o'} eq 'remove_unused')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_REMOVED_UNUSED'}</b></p>),
-      "$in{'t'}", $app;
+    $_success = sprintf ($text{'MSG_REMOVED_UNUSED'}, $in{'t'}, $app);
   }
   # remove selected archives
   elsif ($in{'o'} eq 'delete_archives')
   {
-    $ret = qq(<p><b>$text{'MSG_DELETED_SELECTED_FILES'}</b></p>);
+    $_success = $text{'MSG_DELETED_SELECTED_FILES'};
   }
   # archive was sent without problem
   elsif ($in{'o'} eq 'sent_archive')
   {
-    $ret = qq(<p><b>$text{'MSG_SEND_EMAIL_OK'}</b></p>);
+    $_success = $text{'MSG_SEND_EMAIL_OK'};
   }
-
-  return $ret;
 }
 
 ##### POST actions #####
 #
 # create new translation if requested
-if (($in{'new_translation'} ne '') and ($in{'new_trans_code'} ne ''))
+if (defined ($in{'new_translation'}))
 {
-  my $ret = 1;
-  my $lang_infos = &get_languages_infos ($in{'new_trans_code'});  
-
-  $in{'t'} = $in{'new_trans_code'};
-
-  if (!$lang_infos)
+  if (!$in{'new_trans_code'})
   {
-    $in{'o'} = 'new_trans_bad_not_exists';
-  }
-  elsif (!$lang_infos->{'current_compat'})
-  {
-    $in{'o'} = 'new_trans_bad_compat';
+    $in{'o'} = 'new_trans_bad_no_language';
   }
   else
   {
-    $ret = &trans_create_translation ($in{'new_trans_code'}, $app);
+    my $lang_infos = &get_languages_infos ($in{'new_trans_code'});  
   
-    $in{'o'} =
-      ($ret == 1) ? 'new_trans_exist' : 
-                    ($ret == 2) ? 'new_trans_bad' :
-                                  'new_trans';
+    $in{'t'} = $in{'new_trans_code'};
+  
+    if (!$lang_infos)
+    {
+      $in{'o'} = 'new_trans_bad_not_exists';
+    }
+    elsif (!$lang_infos->{'current_compat'})
+    {
+      $in{'o'} = 'new_trans_bad_compat';
+    }
+    else
+    {
+      my $ret = &trans_create_translation ($in{'new_trans_code'}, $app);
+    
+      $in{'o'} =
+        ($ret == 1) ? 'new_trans_exist' : 
+                      ($ret == 2) ? 'new_trans_bad' :
+                                    'new_trans';
+    }
   }
 }
-# remove a translation
-elsif ($in{'remove'} ne '')
+# Remove a translation
+elsif (defined ($in{'remove'}))
 {
   &redirect ("remove.cgi?referer=admin_main&app=$app&t=$lang&c=" .
     urlize ($target));
@@ -136,13 +130,13 @@ else
 {
   foreach my $item (keys %in)
   {
-    # download a archive
+    # Download archive
     if ($item =~ /^download_(.*)/)
     {
       &trans_archive_send_browser ($1);
       exit;
     }
-    # delete this archive
+    # Delete archive
     elsif ($item =~ /^delete_(.*)/)
     {
       &trans_archive_delete ($1);
@@ -153,27 +147,23 @@ else
 #
 ########################
 
-&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, "general", 1, 0);
-print "<hr>\n";
-printf qq(<h1>$text{'ADMIN_TITLE'}</h1>), $app;
+&trans_header ($text{'ADMIN_TITLE'}, $app, $lang);
 &trans_get_menu_icons_panel ('admin_main', $app);
+print qq(<br/>$text{'ADMIN_DESCRIPTION1'});
 
-print qq(<p>);
+print qq(<p/>);
 print qq(<form action="admin_main.cgi" method="post">);
 print qq(<input type="hidden" name="old_app" value="$app">);
 
-print qq(<p>$text{'ADMIN_DESCRIPTION1'}</p>);
-
-print qq(<p><select name="app" onChange="submit()">);
-printf qq(<option value="">$text{'SELECT_MODULE'}</option>\n);
 &trans_modules_list_get_options ([$app], '');
-print "</select>";
-print qq(<input type="submit" value="$text{'REFRESH'}"></p>);
 
-&trans_monitor_panel ($app) if ($app ne '');
+if (my $msg = &trans_monitor_panel ($app, $in{'monitor'}))
+{
+  $_success = $msg;
+}
 
-# display state message
-print &my_get_msg ();
+# Set success or error msg
+&init_msg ();
 
 # if user has selected a module
 if ($app ne '')
@@ -185,47 +175,29 @@ if ($app ne '')
   
   print qq(<p>$text{'ADMIN_DESCRIPTION2'}</p>);
   
-  print qq(<table border=0 cellpadding=5 cellspacing=0>\n);
-  
-  # search for unused items panel
-  print qq(
-    <tr $tb><td><img src="images/search_24x24.png" align="left" border=0><input type="submit" name="search_unused" value="$text{'SEARCH_UNUSED'}"> $text{'IN'} <select name="search_type"><option value="interface"$interface_selected>$text{'WEB_INTERFACE'}</option><option value="config"$config_selected>$text{'MODULE_CONFIGURATION'}</option></select>
-    </td>
-  );
- 
+  print qq(<div>);
+
+  # Search for unused items panel
+  print qq(<div><button class="btn btn-primary btn-tiny ui_form_end_submit" type="submit" name="search_unused"><i class="fa fa-fw fa-search"></i> <span>$text{'SEARCH_UNUSED'}</span></button> $text{'IN'} <select name="search_type"><option value="interface"$interface_selected>$text{'WEB_INTERFACE'}</option><option value="config"$config_selected>$text{'MODULE_CONFIGURATION'}</option></select>.);
+
   # if "search for unused items" button clicked
-  if ($in{'search_unused'} ne '')
+  if (defined($in{'search_unused'}))
   {
     my %tmp = &trans_get_unused ($search_type, $ref_lang, $app);
     my $unused = scalar (keys (%tmp));
     
-    printf qq(<td $cb>$text{'FOUND_UNUSED_ITEMS'}</td>), $unused;
+    $_success = sprintf ($text{'FOUND_UNUSED_ITEMS'}, $unused);
     if ($unused > 0)
     {
-      print qq(<td><a href="admin_view_unused.cgi?search_type=$search_type&referer=admin_main&app=$app"><img src="images/view.png" alt="$text{'VIEW'}" title="$text{'VIEW_UNUSED'}" border=0></a></td>);
-    }
-    else
-    {
-      print qq(<td>&nbsp;</td>);
+      $_success .= qq(&nbsp;<a href="admin_view_unused.cgi?search_type=$search_type&referer=admin_main&app=$app"><img src="images/view.png" alt="$text{'VIEW'}" title="$text{'VIEW_UNUSED'}"></a>);
     }
   }
-  else
-  {
-    print qq(<td colspan="2">&nbsp;</td>);
-  }
+  print qq(</div>);
 
-  print qq(</tr>);
-  print qq(<tr><td colspan="3">&nbsp;</td></tr>);
+  # Create new translation panel
+  print qq(<p/><div><button type="submit" name="new_translation" class="btn btn-success btn-tiny ui_form_end_submit"><i class="fa fa-fw fa-bolt"></i> <span>$text{'CREATE'}</span></button> $text{'NEW_TRANSLATION'} <input type="text" name="new_trans_code" size="5" value=""/>.</div>);
 
-  # create new translation panel
-  print qq(
-    <tr $tb><td colspan="3"><input type="submit" name="new_translation" 
-      value="$text{'CREATE'}"> $text{'NEW_TRANSLATION'} 
-      <input type="text" name="new_trans_code" size="5" value="">
-    </td></tr>
-  );
-
-  print qq(<tr><td colspan="3">&nbsp;</td></tr>);
+  print qq(</div>);
 
   if (my @trans = &trans_get_existing_translations ([$app]))
   {
@@ -250,21 +222,16 @@ if ($app ne '')
       </select>
     );
 
-  # create remove translation panel 
-  printf qq(
-    <tr $tb><td colspan="3"><input type="submit" name="remove" 
-      value="$text{'DELETE'}"> %s $text{'DELETE_TRANSLATION1'}</td></tr>), 
-        $target_select, $select;
+    # Create remove translation panel 
+    printf (qq(<p/><div><button type="submit" name="remove" class="btn btn-danger btn-tiny ui_form_end_submit"><i class="fa fa-fw fa-trash"></i> <span>$text{'DELETE'}</span></button> %s $text{'DELETE_TRANSLATION1'}.</div>), $target_select, $select);
   }
-
-  print qq(</table>);
 }
 
   print qq(<h2>$text{'ADMIN_TITLE2'}</h2>);
 
   print qq(<p>$text{'ADMIN_DESCRIPTION3'}</p>);
 
-  print qq(<p><a href="/$module_name/archive_main.cgi?app=$app">$text{'CREATE_ARCHIVE'}</a></p>);
+  print qq(<div><button type="button" onclick="location.href='archive_main.cgi?app=$app'" class="btn btn-default btn-tiny"><i class="fa fa-fw fa-plus-square"></i> <span>$text{'CREATE_ARCHIVE'}</span></button></div>);
 
 # read archives directory
 opendir (DIR, "/$config{'trans_working_path'}/.translator/$remote_user/archives/");
@@ -273,20 +240,19 @@ closedir (DIR);
 
 if (scalar (@dir) - 2)
 {
-  print qq(<p><table border="1">);
-  print qq(<tr $tb><th>$text{'FILENAME'}</th><th>$text{'ACTION'}</th></tr>);
+  print qq(<p><table class="trans header">);
+  print qq(<tr><td>$text{'FILENAME'}</td><td>$text{'ACTION'}</td></tr>);
   foreach my $name (sort @dir)
   {
     next if ($name =~ /^\./);
-    print qq(<tr $cb><td>$name</td><td><input type="submit" name="download_$name" value="$text{'DOWNLOAD'}">&nbsp;<input type="checkbox" name="delete_$name" value="on"></td></tr>);
+    print qq(<tr><td>$name</td><td><button type="button" class="btn btn-tiny" onclick="location.href='admin_main.cgi?download_$name=1'"><i class="fa fa-fw fa-download"></i> <span>$text{'DOWNLOAD'}</span></button>&nbsp;<input type="checkbox" name="delete_$name" value="on" onchange="updateActionsChecked(this.form,document.getElementById('delete-archive'), 'delete_')"></td></tr>);
   }
   print qq(</table></p>);
 
-  print qq(<p><input type="submit" name="action_delete_trans" value="$text{'DELETE_SELECTED_FILES'}"></p>);
+  print qq(<div><button type="submit" id="delete-archive" name="action_delete_trans" class="disabled btn btn-danger btn-tiny ui_form_end_submit"><i class="fa fa-fw fa-trash"></i> <span>$text{'DELETE_SELECTED_FILES'}</span></button></div>);
 }
 
 print qq(</form>);
 print qq(</p>);
 
-print qq(<hr>);
-&footer("", $text{'MODULE_INDEX'});
+&trans_footer ('', $text{'MODULE_INDEX'}, $_success, $_error, $_info);

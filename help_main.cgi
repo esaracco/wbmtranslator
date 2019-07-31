@@ -7,40 +7,42 @@
 
 require './translator-lib.pl';
 
+my ($_success, $_error, $_info) = ('', '', '');
 my $app = $in{'app'};
 my $old_app = $in{'old_app'};
 my $app_print = &urlize ($app);
-my $monitor = $in{'monitor'};
+my @files = ();
+my $path = &trans_get_path ($app, 'help');
 
-if ($old_app eq $app)
+# retrieve all files for this module
+if ($app ne '')
 {
-  &trans_set_user_var ("monitor_" . &trans_get_current_app () . "_$app",
-    $monitor);
+  opendir (DH, $path);
+  foreach my $item (readdir (DH))
+  {
+    push (@files, $item) if ($item =~ /^[^\.]+.html$/);
+  }
+  closedir (DH);
 }
 
-# my_get_msg ()
-# IN: -
-# OUT: the message to display or ''
+# init_msg ()
 #
-# return a state message if a action occured
+# Set success or error message.
 # 
-sub my_get_msg ()
+sub init_msg ()
 {
-  my $ret = '';
-
-  # updated a help file
+  # Updated a help file
   if ($in{'o'} eq 'update_trans')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_UPDATED_TRANSLATION'}</b></p>), 
-      $in{'t'};
+    $_success = sprintf ($text{'MSG_UPDATED_TRANSLATION'}, $in{'t'});
   }
-  
-  return $ret;
 }
 
-&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, "help", 1, 0);
-print "<hr>\n";
+&trans_header ($text{'HELP_TITLE'}, $app);
+&trans_get_menu_icons_panel ('help_main', $app);
+print qq(<br>$text{'HELP_DESCRIPTION1'});
 
+#FIXME
 # print javascript section
 print qq(
   <script language="javascript">
@@ -55,41 +57,26 @@ print qq(
   </script>
 );
 
-printf qq(<h1>$text{'HELP_TITLE'}</h1>), $app;
-&trans_get_menu_icons_panel ('help_main', $app);
-print qq(<p>$text{'HELP_DESCRIPTION1'}</p>);
-
 print qq(<p>);
 print qq(<form action="help_main.cgi" method="post">);
 print qq(<input type="hidden" name="old_app" value="$app">);
 print qq(<input type="hidden" name="radio_select" value="">);
-print qq(<select name="app" onChange="submit()">);
-printf qq(<option value="">$text{'SELECT_MODULE'}</option>\n);
+
 &trans_modules_list_get_options ([$app], '');
-print "</select>";
 
-print qq(<input type="submit" value="$text{'REFRESH'}">);
+if (@files && (my $msg = &trans_monitor_panel ($app, $in{'monitor'})))
+{
+  $_success = $msg;
+}
 
-&trans_monitor_panel ($app) if ($app ne '');
-
-# display state message
-print &my_get_msg ();
+# Set success or error msg
+&init_msg ();
 
 # if a module have been chosen
 if ($app ne '')
 {
-  my $path = &trans_get_path ($app, 'help');
   my $form_name = 0;
-  my @files = ();
 
-  # retrieve all files for this module
-  opendir (DH, $path);
-  foreach my $item (readdir (DH))
-  {
-    push (@files, $item) if ($item =~ /^[^\.]+.html$/);
-  }
-  closedir (DH);
- 
   if (@files)
   {
     my @lang_array = &trans_get_existing_translations ([$app]);
@@ -98,17 +85,17 @@ if ($app ne '')
 
     # display translation table for the selected module
     print qq(<p>);
-    print qq(<table border="0" cellspacing="2" cellpadding="2">);
+    print qq(<table class="trans header" width="100%">);
     print qq(
       <tr>
-        <th $tb>$text{'STATE'}</th>
-        <th $tb>$text{'FILE'}</th>
-        <th $tb>$text{'SIZE'}</th>
-        <th $tb>$text{'MODIFIED'}</th>
-        <th $tb>$text{'TRANSLATIONS'}</th>
-        <th $tb>$text{'TO_TRANSLATE'}</th>
-        <th $tb>$text{'TO_UPDATE'}</th>
-        <th $tb>$text{'ACTION'}</th>
+        <td>$text{'STATE'}</td>
+        <td>$text{'FILE'}</td>
+        <td>$text{'SIZE'}</td>
+        <td>$text{'MODIFIED'}</td>
+        <td>$text{'TRANSLATIONS'}</td>
+        <td>$text{'TO_TRANSLATE'}</td>
+        <td>$text{'TO_UPDATE'}</td>
+        <td>$text{'ACTION'}</td>
       </tr>
     );
 
@@ -122,7 +109,7 @@ if ($app ne '')
       my $line = sprintf qq(
                    <td>%s</td>
                    <td>%s</td>
-                   <td>%s</td>
+                   <td align=center>%s</td>
                    <td><select name="select_file$form_name">
                  ),
                  $key,
@@ -165,7 +152,7 @@ if ($app ne '')
                  </select></td>
                  <td>%s</td>
                  <td>%s</td>
-                 <td align="center"><a href="javascript:go_to('$key', 'select_file$form_name')"><img src="images/edit.png" alt="$text{'EDIT'}" title="$text{'EDIT_SELECTION'}" border=0></a></td>
+                 <td align="center"><a href="javascript:go_to('$key', 'select_file$form_name')"><img src="images/edit.png" alt="$text{'EDIT'}" title="$text{'EDIT_SELECTION'}"></a></td>
                  </tr>
                ),
               ($not_translated == 0) ?
@@ -185,7 +172,7 @@ if ($app ne '')
                     qq(<img src="images/smiley_notbad.png"
                        alt="$text{'NOT_SO_BAD'}" title="$text{'NOT_SO_BAD'}">);
       
-      $line = "<tr $cb><td>$state_icon</td>$line";
+      $line = "<tr><td align=center>$state_icon</td>$line";
       print $line;
 
       ++$form_name;
@@ -196,11 +183,10 @@ if ($app ne '')
   }
   else
   {
-    print "<p><b>$text{'HELP_NOEXIST'}</b></p>";
+    $_error = $text{'HELP_NOEXIST'};
   }
 }
 print qq(</form>);
 print qq(</p>);
 
-print qq(<hr/>);
-&footer ('', $text{'MODULE_INDEX'});
+&trans_footer ('', $text{'MODULE_INDEX'}, $_success, $_error, $_info);

@@ -7,6 +7,7 @@
 
 require './translator-lib.pl';
 
+my ($_success, $_error, $_info) = ('', '', '');
 my $module_type = ($in{'module_type'}) ? $in{'module_type'} : 'core';
 my $old_module_type = $in{'old_module_type'}||'';
 my @array_app = ($module_type ne $old_module_type) ? () : split(/\0/, $in{'app'});
@@ -15,50 +16,51 @@ my $multiple_modules = (scalar (@array_app) > 1);
 my $app = ($multiple_modules) ? $text{'MULTIPLE_MODULES'} : $array_app[0];
 my $lang = $in{'lang'};
 my $email = $in{'email'};
-my $do_not_display = $in{'do_not_display'};
+##my $do_not_display = $in{'do_not_display'};
 my $bad_email = '';
 my $not_display = 0;
-my $action = (($in{'send_email_webmin'} ne '') || ($in{'send_email_owner'} ne ''));
+my $action = (defined($in{'send_email_webmin'}) ||
+              defined($in{'send_email_owner'}));
 
 if ($app && !$multiple_modules && !$in{'module_type'})
 {
   $module_type = (&trans_is_webmin_module ($app)) ? 'core' : 'non-core';
 }
 
-# my_get_msg ()
-# IN: -
-# OUT: the message to display or ''
+# init_msg ()
 #
-# return a state message if a action occured
+# Set success or error message.
 #
-sub my_get_msg ()
+sub init_msg ()
 {
-  my $ret = '';
-
   if ($bad_email ne '')
-  {$ret = sprintf qq(<p><b>$text{'MSG_BAD_EMAIL_ERROR'}</b></p>), $bad_email}
+  {
+    $_error = sprintf ($text{'MSG_BAD_EMAIL_ERROR'}, $bad_email);
+  }
   elsif ($action)
   {
     if ($app eq '')
-      {$ret = qq(<p><b>$text{'MSG_ERROR_CHOOSE_MODULE'}</b></p>)}
-    elsif ($in{'send_email_owner'} and $email eq '')
-      {$ret = qq(<p><b>$text{'MSG_ERROR_ENTER_EMAIL'}</b></p>)}
+    {
+      $_error = $text{'MSG_ERROR_CHOOSE_MODULE'};
+    }
+    elsif (defined ($in{'send_email_owner'}) && $email eq '')
+    {
+      $_error = $text{'MSG_ERROR_ENTER_EMAIL'};
+    }
   }
-
-  return $ret;
 }
 
 ##### POST actions #####
 #
 # send email with archive attached
-if ($action and $app ne '')
+if ($action && $app ne '')
 {
   my $tmp_email = '';
   
-  $tmp_email = $in{'email'} if ($in{'send_email_owner'} ne '');
+  $tmp_email = $in{'email'} if (defined($in{'send_email_owner'}));
   
   # translation team
-  if (($tmp_email eq '') and ($in{'send_email_owner'} eq ''))
+  if ($tmp_email eq '' && !defined($in{'send_email_owner'}))
   {
     $tmp_email = ($config{'trans_team_email'} ne '') ?
       $config{'trans_team_email'} : 'translations@webmin.com';
@@ -81,10 +83,11 @@ if ($action and $app ne '')
     &trans_set_user_var ("default_email_$app", $tmp_email)
       if ($module_type eq 'non-core');
 
-    $url = 'send_build.cgi?l=' . &urlize ($lang) . 
-      '&e=' . &urlize ($tmp_email) . '&app=';
+    $url = 'send_build.cgi?l='.&urlize($lang).'&e='.&urlize($tmp_email).'&app=';
     foreach my $mod (@array_app)
-      {$url .= &urlize ($mod) . "|"};
+    {
+      $url .= &urlize($mod).'|';
+    };
     $url =~ s/\|$//;
     &redirect ($url);
     exit;
@@ -97,23 +100,21 @@ else
 #
 ########################
 
-if ($do_not_display)
-{
-  open (H, ">/$config{'trans_working_path'}/.translator/$remote_user/not_display_flg");
-  close (H);
-}
+##if ($do_not_display)
+##{
+##  open (H, '>',
+##    "/$config{'trans_working_path'}/.translator/$remote_user/not_display_flg");
+##  close (H);
+##}
 
-$not_display = (-f "/$config{'trans_working_path'}/.translator/$remote_user/not_display_flg");
+##$not_display = (-f "/$config{'trans_working_path'}/.translator/$remote_user/not_display_flg");
 
-&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, "send", 1, 0);
-print "<hr>\n";
-printf qq(<h1>$text{'SEND_TITLE'}</h1>), $app;
-if ($multiple_modules) {&trans_get_menu_icons_panel ('send_main')}
-  else {&trans_get_menu_icons_panel ('send_main', $app)}
-print qq(<p>$text{'SEND_DESCRIPTION1'}</p>);
+&trans_header ($text{'SEND_TITLE'}, $app, $lang);
+&trans_get_menu_icons_panel ('send_main', ($multiple_modules)?undef:$app);
+print qq(<br/>$text{'SEND_DESCRIPTION1'});
 
-# display state message
-print &my_get_msg ();
+# Set success or error msg
+&init_msg ();
 
 print qq(<p>);
 print qq(<form action="send_main.cgi" method="post">);
@@ -122,58 +123,42 @@ print qq(<input type="hidden" name="old_module_type" value="$module_type">);
 # radio for choosing to display "core" or "non-core" modules
 print qq(<p>$text{'CHOOSE_MODULES_TYPE'}:</p>);
 print "<p><input onChange=\"getElementById('app').selectedIndex=-1;submit()\" type=\"radio\" id='mt1' name=\"module_type\" value=\"core\"" . 
-  (($module_type eq 'core') ? ' checked="checked"' : '') . "><label for='mt1'> $text{'CORE_MODULES'}</label> ";
+  (($module_type eq 'core') ? ' checked="checked"' : '') . "> <label for='mt1'> $text{'CORE_MODULES'}</label> ";
 print "<input onChange=\"getElementById('app').selectedIndex=-1;submit()\" type=\"radio\" id='mt2' name=\"module_type\" value=\"non-core\"" . 
-  (($module_type eq 'non-core') ? ' checked="checked"' : '') . "><label for='mt2'> $text{'NON_CORE_MODULES'}</label></p>";
+  (($module_type eq 'non-core') ? ' checked="checked"' : '') . "> <label for='mt2'> $text{'NON_CORE_MODULES'}</label></p>";
 
-# combo of the modules
-print qq(<select name="app" id="app" multiple size="10">);
 &trans_modules_list_get_options (\@array_app, $module_type);
-print "</select>";
-
-print qq(<p><input type="submit" name="refresh" value="$text{'REFRESH_FILTER_LANGUAGES'}"></p>);
 
 if (scalar (@array_app))
 {
   if (($module_type eq 'non-core') && !$not_display)
   {
-    print qq(
-  <p>
-  <table align="center" cellspacing="5" cellpadding="10" width="60%" style="background: silver;font-size: 10px;font-family: Verdana, Arial, Helvetica, sans-serif;color: black;border: 2px red solid;">
-  <tr><td>$text{'SEND_EMAIL_ALERT1'}
-  <p> <input type="checkbox" name="do_not_display" value="1" onClick="submit()"> $text{'SEND_EMAIL_ALERT2'}.</p>
-  </td></tr>
-  </table>
-  </p>
-    );
+##    $_info = qq($text{'SEND_EMAIL_ALERT1'}<br/><input type="checkbox" name="do_not_display" value="1" onclick="submit()"> $text{'SEND_EMAIL_ALERT2'});
+    $_info = $text{'SEND_EMAIL_ALERT1'};
   }
   
   print qq(<p>$text{'SEND_DESCRIPTION2'}</p>);
   
   print qq(<p><select name="lang">);
-  printf qq(<option value="">$text{'ALL_LANGUAGES'}</option>\n);
+  printf qq(<option value="">$text{'ALL_LANGUAGES'}</option>);
   foreach my $m (&trans_get_existing_translations (\@array_app))
-    {print qq(<option value="$m">$m</option>\n);}
+  {
+    print qq(<option value="$m">$m</option>);
+  }
   print "</select></p>";
   
-  print "<ul>";
-
   if ($module_type eq 'core')
   {
     print qq(
-        <li><input type="submit" value="$text{'CLICK_HERE'}" name="send_email_webmin"> $text{'SEND_CHOICE1'}</li>
+        <button type="submit" class="btn btn-success btn-tiny" name="send_email_webmin"><i class="fa fa-fw fa-bolt"></i> <span>$text{'BUILD'}</span></button> $text{'SEND_CHOICE1'}.
     );
   }
   
   print qq(
-    <li><input type="submit" value="$text{'CLICK_HERE'}" name="send_email_owner"> $text{'SEND_CHOICE2'}: <input type="text" value="$email" name="email">.</li>
-  );
-
-  print "</ul>";
+    <p/><button type="submit" class="btn btn-success btn-tiny" name="send_email_owner"><i class="fa fa-fw fa-envelope"></i> <span>$text{'SEND'}</span></button> $text{'SEND_CHOICE2'}: <input type="text" value="$email" name="email">);
   
   print qq(</form>);
   print qq(</p>);
 }
 
-print qq(<hr>);
-&footer("", $text{'MODULE_INDEX'});
+&trans_footer ('', $text{'MODULE_INDEX'}, $_success, $_error, $_info);

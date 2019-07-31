@@ -7,52 +7,38 @@
 
 require './translator-lib.pl';
 
+my ($_success, $_error, $_info) = ('', '', '');
 my $app = $in{'app'};
 my $old_app = $in{'old_app'};
 my $path = &trans_get_path ('', '') . "/$app";
-my $monitor = $in{'monitor'};
 my $finfo = (&trans_is_theme ($app)) ? 'theme' : 'module';
 
-if ($old_app eq $app)
-{
-  &trans_set_user_var ("monitor_" . &trans_get_current_app () . "_$app",
-    $monitor);
-}
-
-# my_get_msg ()
-# IN: -
-# OUT: the message to display or ''
+# init_msg ()
 #
-# return a state message if a action occured
+# Set success or error message.
 #
-sub my_get_msg ()
+sub init_msg ()
 {
-  my $ret = '';
-  
-  # creation of the new translation was ok
+  # Creation of the new translation was ok
   if ($in{'o'} eq 'new_trans')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_NEW_TRANSLATION'}</b></p>), $in{'t'};
+    $_success = sprintf ($text{'MSG_NEW_TRANSLATION'}, $in{'t'});
   }
-  # translation already exists
+  # Translation already exists
   elsif ($in{'o'} eq 'new_trans_exist')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_NEW_TRANSLATION_EXIST'}</b></p>),
-      $in{'t'}, $app;
+    $_error = sprintf ($text{'MSG_NEW_TRANSLATION_EXIST'}, $in{'t'}, $app);
   }
-  # added new items from ref translation to translation
+  # Added new items from ref translation to translation
   elsif ($in{'o'} eq 'add_new')
   {
-    $ret = sprintf qq(<p><b>$text{'MSG_ADDED_ITEMS'}</b></p>), $in{'t'};
+    $_success = sprintf ($text{'MSG_ADDED_ITEMS'}, $in{'t'});
   }
-  # updated translation
+  # Updated translation
   elsif ($in{'o'} eq 'update_trans')
   {
-    $ret = 
-      sprintf qq(<p><b>$text{'MSG_UPDATED_TRANSLATION'}</b></p>), $in{'t'};
+    $_success = sprintf ($text{'MSG_UPDATED_TRANSLATION'}, $in{'t'});
   }
-  
-  return $ret;
 }
 
 sub trans_display_description_table ( $ $ $ \@ )
@@ -60,27 +46,21 @@ sub trans_display_description_table ( $ $ $ \@ )
   my ($type, $title, $ref_line, $h) = @_;
   my %hash = %$h;
 
-  print qq(<p><table>);
-  print qq(<tr><td>&nbsp;</td></tr>);
-  print qq(<tr><td $tb><b>$title</b></td></tr>);
-  print qq(<tr><td $cb><code>$ref_line</code></td></tr>);
+  print qq(<p><table class="trans keys-values" width="100%">);
+  print qq(<tr><td>$title</td><td class="to-translate">$ref_line</td></tr>);
   print qq(</table>);
 
-   print qq(<p><table>);
-  print qq(<tr><td colspan="2">&nbsp;</td></tr>);
-  print qq(<tr><td $tb><b>$text{'LANGUAGE'}</b></td><td $tb><b>$text{'DESCRIPTION'}</b></td></tr>);
+   print qq(<p><table class="trans header keys-values" width="100%">);
+  print qq(<tr><td>$text{'LANGUAGE'}</td><td>$text{'DESCRIPTION'}</td></tr>);
   foreach my $key (sort keys %hash)
   {
     next if (!&trans_is_language ($key));
     my $value_print = &html_escape ($hash{$key});
-    my $b1 = '';
-    my $b2 = '';
     
-    ($b1, $b2) = ('<b>', '</b>') if ($key eq $ref_lang);
     print qq(
       <tr>
-      <td $cb>&nbsp;&nbsp;$b1$key$b2</td>
-      <td><input type="text" value="$value_print" name="${type}_$key" size="80"></td></tr>);
+      <td>$key</td>
+      <td><input type="text" value="$value_print" name="${type}_$key" size="100%"></td></tr>);
   }
   print qq(</table></p>);
 }
@@ -118,8 +98,8 @@ sub read_file_descs ( $ $ $ $ $ )
 
 ##### POST action #####
 #
-# update module.info/theme descriptions
-if ($in{'update'} ne '')
+# Update module.info/theme descriptions
+if (defined ($in{'update'}))
 {
   my %hash_main = ();
   my %hash_extra = ();
@@ -160,30 +140,30 @@ if ($in{'update'} ne '')
   {
     &write_file ("$path/$finfo.info.$k", $v);
   }
+
+  $_success = $text{'MSG_MODULE_INFO_UPDATE'};
 }
 #
 ########################
 
-&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, "module", 1, 0, 0, qq(<b><a href="javascript:translate_console_open ();">$text{'TRANSLATE_CONSOLE_LINK'}</a></b>));
-&trans_translate_console_get_javascript ();
-print "<hr>\n";
-printf qq(<h1>$text{'MODULE_INFO_TITLE'}</h1>), $app;
+&trans_header ($text{'MODULE_INFO_TITLE'}, $app);
 &trans_get_menu_icons_panel ('module_info_main', $app);
-print qq(<p>$text{'MODULE_INFO_DESCRIPTION'}</p>);
+print qq(<br/>$text{'MODULE_INFO_DESCRIPTION'});
 
 print qq(<p>);
 print qq(<form action="module_info_main.cgi" method="post">);
 print qq(<input type="hidden" name="old_app" value="$app">);
 print qq(<input type="hidden" name="radio_select" value="">);
-print qq(<select name="app" onChange="submit()">);
-printf qq(<option value="">$text{'SELECT_MODULE'}</option>\n);
+
 &trans_modules_list_get_options ([$app], '');
-print "</select>";
 
-&trans_monitor_panel ($app) if ($app ne '');
+if (my $msg = &trans_monitor_panel ($app, $in{'monitor'}))
+{
+  $_success = $msg;
+}
 
-# display state message
-print &my_get_msg ();
+# Set success or error msg
+&init_msg ();
 
 # if a module have been chosen
 if ($app ne '')
@@ -241,11 +221,10 @@ if ($app ne '')
                                       $ref_line_long, \%hash_long);
   }
 
-  print qq(<p><input type="submit" name="update" value="$text{'MODULE_CONFIG_UPDATE_BUTTON'}"></p>);
+  print qq(<div><button type="submit" name="update" class="btn btn-success ui_form_end_submit"><i class="fa fa-fw fa-check-circle-o"></i> <span>$text{'MODULE_CONFIG_UPDATE_BUTTON'}</span></button></div>);
 }
 
 print qq(</form>);
 print qq(</p>);
 
-print qq(<hr>);
-&footer("", $text{'MODULE_INDEX'});
+&trans_footer ('', $text{'MODULE_INDEX'}, $_success, $_error, $_info);

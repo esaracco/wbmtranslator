@@ -1,4 +1,4 @@
 name=translator
-version=0.8.1git20190726
+version=0.8.1git20190731
 category=webmin
-desc=Translation Assistant for Webmin-Modules 
+desc=Translation assistant

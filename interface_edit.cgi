@@ -10,7 +10,7 @@ require './translator-lib.pl';
 my $app = $in{'app'};
 my $lang = $in{'t'};
 my $webmin_lang = $in{'webmin_lang'};
-my $filter_modified = $in{'filter_modified'};
+my $filter_modified = defined ($in{'filter_modified'});
 my %file_ref = ($webmin_lang eq 'lang') ?
      &trans_get_items ("$root_directory/lang/$ref_lang") :
      &trans_get_items (&trans_get_path ($app, "lang/$ref_lang"));
@@ -34,16 +34,15 @@ foreach my $key (keys (%new))
 ##### POST actions #####
 #
 # update translation file
-if ($in{'update'} ne '')
+if (defined ($in{'update'}))
 {
   ($webmin_lang eq 'lang') ?
     open (H, '>', "$root_directory/lang/$lang") :
     open (H, '>', &trans_get_path ($app, "lang/$lang"));
   foreach my $item (sort keys %in)
   {
-    if ($item =~ /newitem_/)
+    if ($item =~ s/newitem_//)
     {
-      $item =~ s/newitem_//g;
       $in{"newitem_$item"} =~ s/(\r\n|\n)/ /g;
       print H $item.'='.$in{"newitem_$item"}."\n";
     }
@@ -62,13 +61,9 @@ if ($in{'update'} ne '')
 #
 ########################
 
-&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, "lang", 1, 0, 0, qq(<b><a href="javascript:translate_console_open ();">$text{'TRANSLATE_CONSOLE_LINK'}</a></b>));
-&trans_translate_console_get_javascript ($lang);
-print "<hr>\n";
+&trans_header ($text{'EDIT_TITLE'}, $app, $lang);
 
-printf qq(<h1>$text{'EDIT_TITLE'}</h1>), $app;
-
-print qq(<p>);
+print qq(<br/>);
 if ($ref_lang ne $lang)
 {
   printf qq($text{'EDIT_DESCRIPTION1'}), $ref_lang, $lang;
@@ -84,20 +79,16 @@ print qq(<input type="hidden" name="app" value="$app">);
 print qq(<input type="hidden" name="t" value="$lang">);
 print qq(<input type="hidden" name="webmin_lang" value="$webmin_lang">);
 
-print qq(<input type="submit" name="filter_modified" value="$text{'ONLY_MODIFIED'}">&nbsp;<input type="submit" value="$text{'DISPLAY_ALL'}">);
+print qq(<div class="btn-group"><button type="submit" class="btn btn-default btn-tiny ui_form_end_submit" name="filter_modified"><i class="fa fa-fw fa-filter"></i> <span>$text{'ONLY_MODIFIED'}</span></button>&nbsp;<button type="submit" class="btn btn-default btn-tiny ui_form_end_submit"><i class="fa fa-fw fa-filter"></i> <span>$text{'DISPLAY_ALL'}</span></button></div>);
 
 print qq(
-  <p>
-  <table border=0 width="10%">
-  <tr>
-  <td width="5%" nowrap><img src="images/updated.png"></td>
-  <td nowrap>= $text{'MODIFIED'}</td>
-  </tr>
-  </table>
-  </p>
+  <p/><div style="text-align:center">
+    <span class="circle success"></span> = $text{'TRANSLATED'},
+    <span class="circle warning"></span> = $text{'MODIFIED'}
+  </div>
 );
 
-print qq(<table border=0 cellspacing=2 cellpadding=2>);
+print qq(<p/><table class="trans keys-values" width="100%">);
 foreach my $key (sort keys %file_ref)
 {
   my %hash = ();
@@ -107,28 +98,34 @@ foreach my $key (sort keys %file_ref)
   %hash = &trans_get_item_updated (\@updated, $key);
   $modified = ($hash{'key'} eq $key);
 
-  $panel = qq(<tr><td $tb colspan=2><b>$key</b> :</td></tr>);
-
   # modified
   if ($modified)
   {
-    $panel .= qq(<tr><td bgcolor="orange">[<b>$ref_lang</b>]</td>);
-    $panel .= qq(<td>
-      <table border="1" cellspacing="1" cellpadding="1">
-      <tr><td valign="top" nowrap><b>$text{'OLD_STRING'}:</b></td>
-      <td valign="top" bgcolor="#FFFF77"><code>);
-    $panel .= &html_escape ($hash{'old'});
-    $panel .= qq(</code></td></tr><tr><td valign="top" nowrap>
-      <b>$text{'NEW_STRING'}:</b></td>
-      <td valign="top" bgcolor="#AAFFAA"><code>);
-    $panel .= &html_escape ($hash{'new'});
-    $panel .= qq(</code></td></tr></table></td></tr>);
+    $panel = qq(<tr><td><span class="circle warning"></span>&nbsp;$key:</td><td></td></tr>);
+    $panel .= qq(<tr><td></td>);
+
+    $panel .= sprintf (qq(<td>
+    <table class="trans keys-values" width="100%">
+    <tr>
+      <td nowrap><b>$text{'OLD_STRING'}:</b></td>
+      <td class="to-translate" style="background:#ffff77">%s</td>
+    </tr>), &html_escape($hash{'old'}));
+
+    if ($ref_lang ne $lang)
+    {
+      $panel .= sprintf (qq(
+        <tr>
+          <td nowrap><b>$text{'NEW_STRING'}:</b></td>
+          <td class="to-translate" style="background:#aaffaa">%s</td>
+       </tr>), &html_escape($hash{'new'}));
+    }
+
+    $panel .= qq(</table></td></tr>);
   }
   # translated
   else
   {
-    $panel .= qq(<tr><td $cb>[<b>$ref_lang</b>]</td><td><code>);
-    $panel .= &html_escape ($file_ref{$key}) . qq(</code></td></tr>);
+    $panel = sprintf (qq(<tr><td><span class="circle success"></span>&nbsp;$key:</td><td class="to-translate">%s</td></tr>), &html_escape($file_ref{$key}));
   };
 
   if ($filter_modified && !$modified) 
@@ -143,8 +140,8 @@ foreach my $key (sort keys %file_ref)
   {
     print qq(
       $panel
-      <tr><td $cb>[<b>$lang</b>]</td><td>
-      <textarea name="newitem_$key" rows=5 cols=80>);
+      <tr><td></td><td>
+      <textarea name="newitem_$key" rows=5>);
     print (($in{"newitem_$key"} ne '') ? 
                            $in{"newitem_$key"} : $file{$key});
 
@@ -154,9 +151,8 @@ foreach my $key (sort keys %file_ref)
 
 print qq(</table>);
 print qq(<p>);
-print qq(<input type="submit" name="update" value="$text{'UPDATE_TRANSLATION_FILE'}">);
+print qq(<p/><div><button type="submit" name="update" class="btn btn-success ui_form_end_submit"><i class="fa fa-fw fa-check-circle-o"></i> <span>$text{'UPDATE_TRANSLATION_FILE'}</span></button></div>);
 print qq(</p>);
 print qq(</form>);
 
-print qq(<hr>);
-&footer("interface_main.cgi?app=$app&webmin_lang=$webmin_lang", $text{'INTERFACE_INDEX'});
+&trans_footer ("interface_main.cgi?app=$app&webmin_lang=$webmin_lang", $text{'INTERFACE_INDEX'});

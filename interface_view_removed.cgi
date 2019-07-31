@@ -22,39 +22,30 @@ my %removed = &trans_get_hash_diff_removed ($ref_lang, $lang, \%file_ref, \%file
 ##### POST actions #####
 #
 # delete removed items
-if ($in{'remove'} ne '')
+if (defined ($in{'remove'}))
 {
   ($webmin_lang eq 'lang') ?
-    open (H, ">$root_directory/lang/$lang") :
-    open (H, ">" . (&trans_get_path ($app, "lang/$lang")));
-  foreach my $item (keys %file)
+    open (H, '>', "$root_directory/lang/$lang") :
+    open (H, '>', &trans_get_path ($app, "lang/$lang"));
+
+  while (my ($k, $v) = each (%file))
   {
-    my $found = 0;
-
-    foreach my $i (keys %removed)
-    {
-      if ($file{$item} eq $removed{$i})
-        {$found = 1; next;}
-    }
-
-    print H "$item=$file{$item}\n" if (!$found);
+    print H "$k=$v\n" if (!exists ($removed{$k}));
   }
+
   close (H);
 
   ($webmin_lang eq 'lang') ?
     &trans_char2ent ("$root_directory/lang/$lang", 'html') :
     &trans_char2ent (&trans_get_path ($app, "lang/$lang"), 'html');
-  
+
   &redirect ("$in{'referer'}.cgi?app=$app&t=$lang&o=remove&webmin_lang=$webmin_lang");
 }
 #
 ########################
 
-&header(sprintf ($text{'FORM_TITLE'}, ($config{'trans_webmin'}) ? $text{'FORM_TITLE_W'} : $text{'FORM_TITLE_U'}), undef, undef, 1, 0);
-print "<hr>\n";
-
-printf qq(<h1>$text{'VIEW_REMOVED_TITLE'}</h1>), $app;
-printf qq(<p>$text{'VIEW_REMOVED_DESCRIPTION'}</p>), $ref_lang, $lang;
+&trans_header ($text{'VIEW_REMOVED_TITLE'}, $app, $lang);
+printf (qq(<br/>$text{'VIEW_REMOVED_DESCRIPTION'}), $ref_lang, $lang);
 
 print qq(<p>);
 print qq(<form action="interface_view_removed.cgi" method="post">);
@@ -62,20 +53,17 @@ print qq(<input type="hidden" name="app" value="$app">);
 print qq(<input type="hidden" name="t" value="$lang">);
 print qq(<input type="hidden" name="webmin_lang" value="$webmin_lang">);
 print qq(<input type="hidden" name="referer" value="$in{'referer'}">);
-print qq(<table border=0 cellspacing=2 cellpadding=2>);
+print qq(<table class="trans keys-values" width="100%">);
 foreach my $key (sort keys %removed)
 {
-  print qq(
-    <tr><td $tb colspan=2><b>$key</b> :</td></tr>
-    <tr><td $cb>[<b>$lang</b>]</td><td><code>);
+  print qq(<tr><td>$key:</td><td>);
   print &html_escape ($removed{"$key"});
-  print qq(</code></td></tr>);
+  print qq(</td></tr>);
 }
 print qq(</table>);
 
-print qq(<p><input type="submit" name="remove" value="$text{'REMOVED_FROM_TRANSLATION_FILE'}"></p>);
+print qq(<p/><div><button type="submit" name="remove" class="btn btn-danger"><i class="fa fa-fw fa-trash"></i> <span>$text{'REMOVED_FROM_TRANSLATION_FILE'}</span></button></div>);
 print qq(</form>);
 print qq(</p>);
 
-print qq(<hr>);
-&footer("$in{'referer'}.cgi?app=$app&webmin_lang=$webmin_lang", $text{'PREVIOUS'});
+&trans_footer("$in{'referer'}.cgi?app=$app&webmin_lang=$webmin_lang", $text{'PREVIOUS'});

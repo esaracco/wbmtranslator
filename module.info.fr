@@ -1,1 +1,1 @@
-desc_fr=Assistant de Traduction pour modules Webmin
+desc_fr.UTF-8=Assistant de traduction
