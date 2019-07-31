@@ -211,15 +211,27 @@ if ($app ne '')
   }
   closedir (DH);
 
-  &trans_display_description_table ('desc', 
-                                    $text{'MODULE_CONFIG_SHORT_DESCRIPTION3'},
-                                    $ref_line_short, \%hash_short);
+  # Tabs management
+  my @tabs = (['short', $text{'MODULE_INFO_TAB_SHORT_TITLE'}]);
   if ($ref_line_long)
   {
-    &trans_display_description_table ('longdesc', 
-                                      $text{'MODULE_CONFIG_LONG_DESCRIPTION3'},
-                                      $ref_line_long, \%hash_long);
+    push (@tabs, (['long', $text{'MODULE_INFO_TAB_LONG_TITLE'}]));
   }
+  print ui_tabs_start(\@tabs, 'admin', 'short');
+  print ui_tabs_start_tab('infos', 'short');
+  &trans_display_description_table (
+    'desc', $text{'MODULE_CONFIG_SHORT_DESCRIPTION3'},
+    $ref_line_short, \%hash_short);
+  print ui_tabs_end_tab('infos', 'short');
+  if ($ref_line_long)
+  {
+    print ui_tabs_start_tab('infos', 'long');
+      &trans_display_description_table (
+        'longdesc', $text{'MODULE_CONFIG_LONG_DESCRIPTION3'},
+        $ref_line_long, \%hash_long);
+    print ui_tabs_end_tab('infos', 'long');
+  }
+  print ui_tabs_end();
 
   print qq(<div><button type="submit" name="update" class="btn btn-success ui_form_end_submit"><i class="fa fa-fw fa-check-circle-o"></i> <span>$text{'MODULE_CONFIG_UPDATE_BUTTON'}</span></button></div>);
 }

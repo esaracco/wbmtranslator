@@ -11,6 +11,7 @@ my ($_success, $_error, $_info) = ('', '', '');
 my $app = $in{'app'};
 my $search_type = $in{'search_type'};
 my %unused = &trans_get_unused ($search_type, $ref_lang, $app);
+my $default_tab = $in{'tab'}||'';
 
 sub _purge_items ( $ $ $ )
 {
@@ -51,7 +52,7 @@ if (defined ($in{'remove'}))
     &_purge_items ("$path_lang/config.info", \%fcontent, \%unused);
   }
   
-  &redirect ("$in{'referer'}.cgi?app=$app&o=remove_unused");
+  &redirect ("$in{'referer'}.cgi?app=$app&o=remove_unused&tab=$default_tab");
   exit;
 }
 #
@@ -67,6 +68,7 @@ print qq(<form action="admin_view_unused.cgi" method="post">);
 print qq(<input type="hidden" name="app" value="$app">);
 print qq(<input type="hidden" name="search_type" value="$search_type">);
 print qq(<input type="hidden" name="referer" value="$in{'referer'}">);
+print qq(<input type="hidden" name="tab" value="$default_tab">);
 print qq(<table class="trans keys-values">);
 foreach my $key (sort keys %unused)
 {
@@ -81,4 +83,4 @@ print qq(<p/><div><button type="submit" class="btn btn-danger ui_form_end_submit
 print qq(</form>);
 print qq(</p>);
 
-&trans_footer("$in{'referer'}.cgi?app=$app", $text{'PREVIOUS'}, $_success, $_error, $_info);
+&trans_footer("$in{'referer'}.cgi?app=$app&tab=$default_tab", $text{'PREVIOUS'}, $_success, $_error, $_info);

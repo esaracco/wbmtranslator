@@ -12,6 +12,7 @@ my $lang = $in{'t'};
 my $target = $in{'c'};
 my $webmin_lang = $in{'webmin_lang'};
 my $finfo = (&trans_is_theme ($app)) ? 'theme' : 'module';
+my $default_tab = $in{'tab'}||'';
 
 ##### POST action #####
 #
@@ -94,7 +95,7 @@ if (defined ($in{'remove'}))
     close (SRC);
   }
 
-  &redirect ("$in{'referer'}.cgi?app=$app&t=$lang&o=remove_trans&webmin_lang=$webmin_lang");
+  &redirect ("$in{'referer'}.cgi?app=$app&t=$lang&o=remove_trans&webmin_lang=$webmin_lang&tab=$default_tab");
   exit;
 }
 #
@@ -153,4 +154,4 @@ print qq(<input type="hidden" name="referer" value="$in{'referer'}">);
 print qq(<p/><div><button type="submit" name="remove" class="btn btn-danger"><i class="fa fa-fw fa-trash"></i> <span>$text{'REMOVE_TRANSLATION'}</span></button></div>);
 print qq(</form>);
 
-&trans_footer("$in{'referer'}.cgi?app=$app&webmin_lang=$webmin_lang", $text{'PREVIOUS'});
+&trans_footer("$in{'referer'}.cgi?app=$app&webmin_lang=$webmin_lang&tab=$default_tab", $text{'PREVIOUS'});

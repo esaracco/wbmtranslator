@@ -1,3 +1,11 @@
+table.ui_tabs {
+  margin-top:20px;
+}
+
+.tab-pane > div {
+  margin-top:20px;
+}
+
 img {
   border:0;
 }

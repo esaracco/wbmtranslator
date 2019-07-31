@@ -1673,7 +1673,7 @@ sub trans_modules_list_get_options ( \@ $ )
   my ($array, $module_type) = @_;
   my $multi = ($module_type) ? ' multiple size="10"':'';
   
-  print qq(<select name="app" id="app" onchange="submit()"$multi>);
+  print qq(<select name="app" id="app" onchange="var tab=document.querySelector('[name=tab]');if(tab)tab.value='';submit()"$multi>);
 
   print qq(<option value="">$text{'SELECT_MODULE'}</option>) if (!$multi);
 

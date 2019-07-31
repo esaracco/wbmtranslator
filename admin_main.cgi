@@ -13,7 +13,10 @@ my $old_app = $in{'old_app'};
 my $lang = ($in{'lang'} eq '') ? $ref_lang : $in{'lang'};
 my $search_type = $in{'search_type'};
 my $target = $in{'target'};
-my $dir = ();
+my $path = &trans_get_path ($app, 'lang/');
+my $interface_selected = ($search_type eq 'interface') ? ' selected="selected"' : '';
+my $config_selected = ($search_type eq 'config') ? ' selected="selected"' : '';
+my $default_tab = $in{'tab'}||'archives';
 
 # init_msg ()
 #
@@ -122,8 +125,7 @@ if (defined ($in{'new_translation'}))
 # Remove a translation
 elsif (defined ($in{'remove'}))
 {
-  &redirect ("remove.cgi?referer=admin_main&app=$app&t=$lang&c=" .
-    urlize ($target));
+  &redirect ("remove.cgi?referer=admin_main&app=$app&t=$lang&tab=$default_tab&c=".urlize($target));
   exit;
 }
 else
@@ -153,6 +155,7 @@ print qq(<br/>$text{'ADMIN_DESCRIPTION1'});
 
 print qq(<p/>);
 print qq(<form action="admin_main.cgi" method="post">);
+print qq(<input type="hidden" name="tab" value="$default_tab">);
 print qq(<input type="hidden" name="old_app" value="$app">);
 
 &trans_modules_list_get_options ([$app], '');
@@ -165,39 +168,70 @@ if (my $msg = &trans_monitor_panel ($app, $in{'monitor'}))
 # Set success or error msg
 &init_msg ();
 
-# if user has selected a module
+# Tabs management
+my @tabs = (['archives', $text{'ADMIN_TAB_TITLE_ARCHIVES'}]);
 if ($app ne '')
 {
-  my $updated = 0;
-  my $path = &trans_get_path ($app, 'lang/');
-  my $interface_selected = ($search_type eq 'interface') ? ' selected="selected"' : '';
-  my $config_selected = ($search_type eq 'config') ? ' selected="selected"' : '';
-  
-  print qq(<p>$text{'ADMIN_DESCRIPTION2'}</p>);
-  
+  push @tabs, (
+    ['create_delete', $text{'ADMIN_TAB_TITLE_CREATE_DELETE'}],
+    ['search', $text{'ADMIN_TAB_TITLE_SEARCH'}]);
+}
+print ui_tabs_start(\@tabs, 'admin', $default_tab);
+print ui_tabs_start_tab('admin', 'archives');
+&_archives ();
+print ui_tabs_end_tab('admin', 'archives');
+if ($app ne '')
+{
+  print ui_tabs_start_tab('admin', 'create_delete');
+  &_create_delete ();
+  print ui_tabs_end_tab('admin', 'create_delete');
+
+  print ui_tabs_start_tab('admin', 'search');
+  &_search ();
+  print ui_tabs_end_tab('admin', 'search');
+}
+print ui_tabs_end();
+
+# Tab 1 "Archives management"
+sub _archives ()
+{
   print qq(<div>);
 
-  # Search for unused items panel
-  print qq(<div><button class="btn btn-primary btn-tiny ui_form_end_submit" type="submit" name="search_unused"><i class="fa fa-fw fa-search"></i> <span>$text{'SEARCH_UNUSED'}</span></button> $text{'IN'} <select name="search_type"><option value="interface"$interface_selected>$text{'WEB_INTERFACE'}</option><option value="config"$config_selected>$text{'MODULE_CONFIGURATION'}</option></select>.);
+  print qq(<p>$text{'ADMIN_DESCRIPTION3'}</p>);
 
-  # if "search for unused items" button clicked
-  if (defined($in{'search_unused'}))
+  print qq(<div><button type="button" onclick="location.href='archive_main.cgi?app=$app'" class="btn btn-default btn-tiny"><i class="fa fa-fw fa-plus-square"></i> <span>$text{'CREATE_ARCHIVE'}</span></button></div>);
+
+# read archives directory
+opendir (DIR, "/$config{'trans_working_path'}/.translator/$remote_user/archives/");
+@dir = readdir (DIR);
+closedir (DIR);
+
+if (scalar (@dir) - 2)
+{
+  print qq(<p><table class="trans header">);
+  print qq(<tr><td>$text{'FILENAME'}</td><td>$text{'ACTION'}</td></tr>);
+  foreach my $name (sort @dir)
   {
-    my %tmp = &trans_get_unused ($search_type, $ref_lang, $app);
-    my $unused = scalar (keys (%tmp));
-    
-    $_success = sprintf ($text{'FOUND_UNUSED_ITEMS'}, $unused);
-    if ($unused > 0)
-    {
-      $_success .= qq(&nbsp;<a href="admin_view_unused.cgi?search_type=$search_type&referer=admin_main&app=$app"><img src="images/view.png" alt="$text{'VIEW'}" title="$text{'VIEW_UNUSED'}"></a>);
-    }
+    next if ($name =~ /^\./);
+    print qq(<tr><td>$name</td><td><button type="button" class="btn btn-tiny" onclick="location.href='admin_main.cgi?download_$name=1'"><i class="fa fa-fw fa-download"></i> <span>$text{'DOWNLOAD'}</span></button>&nbsp;<input type="checkbox" name="delete_$name" value="on" onchange="updateActionsChecked(this.form,document.getElementById('delete-archive'), 'delete_')"></td></tr>);
   }
-  print qq(</div>);
+  print qq(</table></p>);
 
+  print qq(<div><button type="submit" onclick="document.querySelector('[name=tab]').value='archives'" id="delete-archive" name="action_delete_trans" class="disabled btn btn-danger ui_form_end_submit"><i class="fa fa-fw fa-trash"></i> <span>$text{'DELETE_SELECTED_FILES'}</span></button></div>);
+}
+
+  print qq(</div>);
+}
+
+# Tab 2 "Create /delete translations"
+sub _create_delete ()
+{
+  print qq(<div>);
+
+  print qq(<p>$text{'ADMIN_DESCRIPTION2'}</p>);
+  
   # Create new translation panel
-  print qq(<p/><div><button type="submit" name="new_translation" class="btn btn-success btn-tiny ui_form_end_submit"><i class="fa fa-fw fa-bolt"></i> <span>$text{'CREATE'}</span></button> $text{'NEW_TRANSLATION'} <input type="text" name="new_trans_code" size="5" value=""/>.</div>);
-
-  print qq(</div>);
+  print qq(<p/><div><button type="submit" onclick="document.querySelector('[name=tab]').value='create_delete'" name="new_translation" class="btn btn-success ui_form_end_submit"><i class="fa fa-fw fa-bolt"></i> <span>$text{'CREATE'}</span></button> $text{'NEW_TRANSLATION'} <input type="text" name="new_trans_code" size="5" value=""/></div>);
 
   if (my @trans = &trans_get_existing_translations ([$app]))
   {
@@ -223,33 +257,36 @@ if ($app ne '')
     );
 
     # Create remove translation panel 
-    printf (qq(<p/><div><button type="submit" name="remove" class="btn btn-danger btn-tiny ui_form_end_submit"><i class="fa fa-fw fa-trash"></i> <span>$text{'DELETE'}</span></button> %s $text{'DELETE_TRANSLATION1'}.</div>), $target_select, $select);
+    printf (qq(<p/><div><button type="submit" onclick="document.querySelector('[name=tab]').value='create_delete'" name="remove" class="btn btn-danger ui_form_end_submit"><i class="fa fa-fw fa-trash"></i> <span>$text{'DELETE'}</span></button> %s $text{'DELETE_TRANSLATION1'}</div>), $target_select, $select);
   }
+
+  print qq(</div>);
 }
 
-  print qq(<h2>$text{'ADMIN_TITLE2'}</h2>);
-
-  print qq(<p>$text{'ADMIN_DESCRIPTION3'}</p>);
-
-  print qq(<div><button type="button" onclick="location.href='archive_main.cgi?app=$app'" class="btn btn-default btn-tiny"><i class="fa fa-fw fa-plus-square"></i> <span>$text{'CREATE_ARCHIVE'}</span></button></div>);
-
-# read archives directory
-opendir (DIR, "/$config{'trans_working_path'}/.translator/$remote_user/archives/");
-@dir = readdir (DIR);
-closedir (DIR);
-
-if (scalar (@dir) - 2)
+# Tab 3 "Search for unused items"
+sub _search ()
 {
-  print qq(<p><table class="trans header">);
-  print qq(<tr><td>$text{'FILENAME'}</td><td>$text{'ACTION'}</td></tr>);
-  foreach my $name (sort @dir)
-  {
-    next if ($name =~ /^\./);
-    print qq(<tr><td>$name</td><td><button type="button" class="btn btn-tiny" onclick="location.href='admin_main.cgi?download_$name=1'"><i class="fa fa-fw fa-download"></i> <span>$text{'DOWNLOAD'}</span></button>&nbsp;<input type="checkbox" name="delete_$name" value="on" onchange="updateActionsChecked(this.form,document.getElementById('delete-archive'), 'delete_')"></td></tr>);
-  }
-  print qq(</table></p>);
+  print qq(<div>);
 
-  print qq(<div><button type="submit" id="delete-archive" name="action_delete_trans" class="disabled btn btn-danger btn-tiny ui_form_end_submit"><i class="fa fa-fw fa-trash"></i> <span>$text{'DELETE_SELECTED_FILES'}</span></button></div>);
+  print qq(<p>$text{'ADMIN_DESCRIPTION_SEARCH'}</p>);
+
+  # Search for unused items panel
+  print qq(<button class="btn btn-success ui_form_end_submit" type="submit" onclick="document.querySelector('[name=tab]').value='search'" name="search_unused"><i class="fa fa-fw fa-search"></i> <span>$text{'SEARCH_UNUSED'}</span></button> $text{'IN'} <select name="search_type"><option value="interface"$interface_selected>$text{'WEB_INTERFACE'}</option><option value="config"$config_selected>$text{'MODULE_CONFIGURATION'}</option></select>);
+
+  # if "search for unused items" button clicked
+  if (defined($in{'search_unused'}))
+  {
+    my %tmp = &trans_get_unused ($search_type, $ref_lang, $app);
+    my $unused = scalar (keys (%tmp));
+    
+    $_success = sprintf ($text{'FOUND_UNUSED_ITEMS'}, $unused);
+    if ($unused > 0)
+    {
+      $_success .= qq(&nbsp;<a href="admin_view_unused.cgi?search_type=$search_type&referer=admin_main&app=$app&tab=$default_tab"><img src="images/view.png" alt="$text{'VIEW'}" title="$text{'VIEW_UNUSED'}"></a>);
+    }
+  }
+
+  print qq(</div>);
 }
 
 print qq(</form>);
