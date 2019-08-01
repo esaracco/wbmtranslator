@@ -902,9 +902,9 @@ sub trans_header_extra ()
 {
   my $module_version = $module_info{'version'};
 
-  print qq(<link rel="stylesheet" type="text/css" href="css/styles.css?$module_version"/>);
-  print qq(<script src="js/scripts.js?$module_version"></script>);
-  print qq(<div id="trans-msg"></div>);
+  print qq(<link rel="stylesheet" type="text/css" href="css/translator.css?$module_version"/>);
+  print qq(<script src="js/translator.js?$module_version"></script>);
+  print qq(<div id="alert-msg"></div>);
 }
 
 sub trans_display_msg ( $ $ $ )
