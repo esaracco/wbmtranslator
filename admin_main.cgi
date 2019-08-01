@@ -192,41 +192,39 @@ if ($app ne '')
 }
 print ui_tabs_end();
 
-# Tab 1 "Archives management"
+# Tab 1 "Archives"
 sub _archives ()
 {
-  print qq(<div>);
+  print qq(<h2>$text{'ADMIN_ARCHIVES_TITLE'}</h2>);
 
   print qq(<p>$text{'ADMIN_DESCRIPTION3'}</p>);
 
   print qq(<div><button type="button" onclick="location.href='archive_main.cgi?app=$app'" class="btn btn-default btn-tiny"><i class="fa fa-fw fa-plus-square"></i> <span>$text{'CREATE_ARCHIVE'}</span></button></div>);
 
-# read archives directory
-opendir (DIR, "/$config{'trans_working_path'}/.translator/$remote_user/archives/");
-@dir = readdir (DIR);
-closedir (DIR);
-
-if (scalar (@dir) - 2)
-{
-  print qq(<p><table class="trans header">);
-  print qq(<tr><td>$text{'FILENAME'}</td><td>$text{'ACTION'}</td></tr>);
-  foreach my $name (sort @dir)
+  # Read archives directory
+  opendir (DIR, "/$config{'trans_working_path'}/.translator/$remote_user/archives/");
+  @dir = readdir (DIR);
+  closedir (DIR);
+  
+  if (scalar (@dir) - 2)
   {
-    next if ($name =~ /^\./);
-    print qq(<tr><td>$name</td><td><button type="button" class="btn btn-tiny" onclick="location.href='admin_main.cgi?download_$name=1'"><i class="fa fa-fw fa-download"></i> <span>$text{'DOWNLOAD'}</span></button>&nbsp;<input type="checkbox" name="delete_$name" value="on" onchange="updateActionsChecked(this.form,document.getElementById('delete-archive'), 'delete_')"></td></tr>);
+    print qq(<p><table class="trans header">);
+    print qq(<tr><td>$text{'FILENAME'}</td><td>$text{'ACTION'}</td></tr>);
+    foreach my $name (sort @dir)
+    {
+      next if ($name =~ /^\./);
+      print qq(<tr><td>$name</td><td><button type="button" class="btn btn-tiny" onclick="location.href='admin_main.cgi?download_$name=1'"><i class="fa fa-fw fa-download"></i> <span>$text{'DOWNLOAD'}</span></button>&nbsp;<input type="checkbox" name="delete_$name" value="on" onchange="updateActionsChecked(this.form,document.getElementById('delete-archive'), 'delete_')"></td></tr>);
+    }
+    print qq(</table></p>);
+  
+    print qq(<div><button type="submit" onclick="document.querySelector('[name=tab]').value='archives'" id="delete-archive" name="action_delete_trans" class="disabled btn btn-danger ui_form_end_submit"><i class="fa fa-fw fa-trash"></i> <span>$text{'DELETE_SELECTED_FILES'}</span></button></div>);
   }
-  print qq(</table></p>);
-
-  print qq(<div><button type="submit" onclick="document.querySelector('[name=tab]').value='archives'" id="delete-archive" name="action_delete_trans" class="disabled btn btn-danger ui_form_end_submit"><i class="fa fa-fw fa-trash"></i> <span>$text{'DELETE_SELECTED_FILES'}</span></button></div>);
 }
 
-  print qq(</div>);
-}
-
-# Tab 2 "Create /delete translations"
+# Tab 2 "Create / delete"
 sub _create_delete ()
 {
-  print qq(<div>);
+  print qq(<h2>$text{'CREATE_DELETE_TITLE'}</h2>);
 
   print qq(<p>$text{'ADMIN_DESCRIPTION2'}</p>);
   
@@ -259,19 +257,17 @@ sub _create_delete ()
     # Create remove translation panel 
     printf (qq(<p/><div><button type="submit" onclick="document.querySelector('[name=tab]').value='create_delete'" name="remove" class="btn btn-danger ui_form_end_submit"><i class="fa fa-fw fa-trash"></i> <span>$text{'DELETE'}</span></button> %s $text{'DELETE_TRANSLATION1'}</div>), $target_select, $select);
   }
-
-  print qq(</div>);
 }
 
-# Tab 3 "Search for unused items"
+# Tab 3 "Unused items"
 sub _search ()
 {
-  print qq(<div>);
+  print qq(<h2>$text{'SEARCH_UNUSED_ITEMS_TITLE'}</h2>);
 
   print qq(<p>$text{'ADMIN_DESCRIPTION_SEARCH'}</p>);
 
   # Search for unused items panel
-  print qq(<button class="btn btn-success ui_form_end_submit" type="submit" onclick="document.querySelector('[name=tab]').value='search'" name="search_unused"><i class="fa fa-fw fa-search"></i> <span>$text{'SEARCH_UNUSED'}</span></button> $text{'IN'} <select name="search_type"><option value="interface"$interface_selected>$text{'WEB_INTERFACE'}</option><option value="config"$config_selected>$text{'MODULE_CONFIGURATION'}</option></select>);
+  print qq(<button class="btn btn-success ui_form_end_submit" type="submit" onclick="document.querySelector('[name=tab]').value='search'" name="search_unused"><i class="fa fa-fw fa-search"></i> <span>$text{'SEARCH'}</span></button> $text{'IN'} <select name="search_type"><option value="interface"$interface_selected>$text{'WEB_INTERFACE'}</option><option value="config"$config_selected>$text{'MODULE_CONFIGURATION'}</option></select>);
 
   # if "search for unused items" button clicked
   if (defined($in{'search_unused'}))
@@ -285,8 +281,6 @@ sub _search ()
       $_success .= qq(&nbsp;<a href="admin_view_unused.cgi?search_type=$search_type&referer=admin_main&app=$app&tab=$default_tab"><img src="images/view.png" alt="$text{'VIEW'}" title="$text{'VIEW_UNUSED'}"></a>);
     }
   }
-
-  print qq(</div>);
 }
 
 print qq(</form>);

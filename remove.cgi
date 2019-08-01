@@ -146,11 +146,12 @@ elsif ($target eq 'uconfig_info')
 }
 
 print qq(<form action="remove.cgi" method="post">);
-print qq(<input type="hidden" name="app" value="$app">);
-print qq(<input type="hidden" name="t" value="$lang">);
-print qq(<input type="hidden" name="c" value="$target">);
-print qq(<input type="hidden" name="webmin_lang" value="$webmin_lang">);
-print qq(<input type="hidden" name="referer" value="$in{'referer'}">);
+print qq(<input type="hidden" name="app" value="$app"/>);
+print qq(<input type="hidden" name="tab" value="$default_tab"/>);
+print qq(<input type="hidden" name="t" value="$lang"/>);
+print qq(<input type="hidden" name="c" value="$target"/>);
+print qq(<input type="hidden" name="webmin_lang" value="$webmin_lang"/>);
+print qq(<input type="hidden" name="referer" value="$in{'referer'}"/>);
 print qq(<p/><div><button type="submit" name="remove" class="btn btn-danger"><i class="fa fa-fw fa-trash"></i> <span>$text{'REMOVE_TRANSLATION'}</span></button></div>);
 print qq(</form>);
 
