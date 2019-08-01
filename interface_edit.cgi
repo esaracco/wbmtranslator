@@ -70,7 +70,7 @@ if ($ref_lang ne $lang)
 }
 else
 {
-  printf qq($text{'EDIT_DESCRIPTION2'}), $ref_lang, $lang;
+  printf qq($text{'EDIT_DESCRIPTION2'}), $ref_lang;
 }
 print qq(</p>);
 
