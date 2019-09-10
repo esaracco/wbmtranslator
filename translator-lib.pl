@@ -930,7 +930,14 @@ sub trans_display_msg ( $ $ $ )
 
   $msg =~ s/"/\\"/g;
 
-  print qq(<script>displayMsg("$msg", "$msg_type")</script>) if ($msg);
+  if ($msg)
+  {
+    print qq(
+      <script>
+        setTimeout(function(){displayMsg("$msg", "$msg_type")}, 250);
+      </script>
+    );
+  }
 }
 
 
