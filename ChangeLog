@@ -1,3 +1,9 @@
+2021-01-22 Emmanuel Saracco <emmanuel@esaracco.fr>
+
+	* Version: 0.9.1
+
+	  - Fixed issue with Reverso translation API.
+
 2019-08-01 Emmanuel Saracco <esaracco@users.labs.libre-entreprise.org>
 
 	* Version: 0.9
