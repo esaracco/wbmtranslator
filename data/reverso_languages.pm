@@ -1,9 +1,9 @@
 # reverso.net languages
 our %reverso_langs = (
-     'Allemand' => 'de',
-     'Anglais' => 'en',
-     'Espagnol' => 'es',
-     'Français' => 'fr',
-     'Italien' => 'it',
-     'Portugais' => 'pt'
+     'Allemand' => 'dut',
+     'Anglais' => 'eng',
+     'Espagnol' => 'spa',
+     'Français' => 'fra',
+     'Italien' => 'ita',
+     'Portugais' => 'por'
 );

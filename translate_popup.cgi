@@ -1,11 +1,12 @@
 #!/usr/bin/perl
 
-# Copyright (C) 2004-2019
+# Copyright (C) 2004-2021
 # Emmanuel Saracco <emmanuel@esaracco.fr>
 #
 # GNU GENERAL PUBLIC LICENSE
 
 use LWP::UserAgent;
+use HTML::Entities;
 use JSON;
 
 require './translator-lib.pl';
@@ -26,12 +27,17 @@ if ($in{'translate'})
 {
   my $str = $in{'text'};
   $str =~ s/<(?:[^>'"]*|(['"]).*?\1)*>//msgi;
-  my $req = HTTP::Request->new ('POST', 'https://engine2-async.reverso.net/WebReferences/WSAJAXInterface.asmx/TranslateCorrWS');
+  my $req = HTTP::Request->new ('POST', 'https://api.reverso.net/translate/v1/translation');
   $req->content (to_json ({
-    'searchText' => $str,
-    'direction' => $in{'lang1'}.'-'.$in{'lang2'},
-    'maxTranslationChars' => -1,
-    'usecorr' => 'false'
+    'input' => $str,
+    'from' => $in{'lang1'},
+    'to' => $in{'lang2'},
+    'format' => 'text',
+    'options' => {
+      'sentenceSplitter' => \0,
+      'contextResults' => \0,
+      'languageDetection' => \1
+    }
   }));
 
   my $ua = LWP::UserAgent->new ();
@@ -41,7 +47,7 @@ if ($in{'translate'})
     'Accept' => 'application/json',
     'Accept-Charset' => 'utf-8',
     'Connection' => 'close',
-    'Referer' => 'https://http://www.reverso.net/text_translation.aspx',
+    'Referer' => 'https://www.reverso.net/text_translation.aspx',
     'User-Agent' =>
       'Mozilla/5.0 (X11; Linux x86_64) '.
       'AppleWebKit/537.36 (KHTML, like Gecko) '.
@@ -52,7 +58,8 @@ if ($in{'translate'})
   if ($r->is_success)
   {
     my $data = from_json ($r->decoded_content, {'utf8' => 1});
-    $translation = $data->{'d'}{'result'};
+
+    $translation = ucfirst (decode_entities ($data->{'translation'}->[0]));
   }
   else
   {
