@@ -101,10 +101,10 @@ foreach my $key (sort keys %file_ref)
   # modified
   if ($modified)
   {
-    $panel = qq(<tr><td><span class="circle warning"></span>&nbsp;$key:</td><td></td></tr>);
+    $panel = qq(<tr><td><span class="circle warning"></span></td><td>&nbsp;$key:</td><td></td></tr>);
     $panel .= qq(<tr><td></td>);
 
-    $panel .= sprintf (qq(<td>
+    $panel .= sprintf (qq(<td colspan="2">
     <table class="trans keys-values" width="100%">
     <tr>
       <td nowrap><b>$text{'OLD_STRING'}:</b></td>
@@ -125,7 +125,7 @@ foreach my $key (sort keys %file_ref)
   # translated
   else
   {
-    $panel = sprintf (qq(<tr><td><span class="circle success"></span>&nbsp;$key:</td><td class="to-translate">%s</td></tr>), &html_escape($file_ref{$key}));
+    $panel = sprintf (qq(<tr><td><span class="circle success"></span></td><td>&nbsp;$key:</td><td class="to-translate">%s</td></tr>), &html_escape($file_ref{$key}));
   };
 
   if ($filter_modified && !$modified) 
@@ -140,11 +140,9 @@ foreach my $key (sort keys %file_ref)
   {
     print qq(
       $panel
-      <tr><td></td><td>
+      <tr><td></td><td colspan="2">
       <textarea name="newitem_$key" rows=5>);
-    print (($in{"newitem_$key"} ne '') ? 
-                           $in{"newitem_$key"} : $file{$key});
-
+    print (($in{"newitem_$key"} ne '') ? $in{"newitem_$key"} : $file{$key});
     print qq(</textarea></td></tr>);
   }
 }
