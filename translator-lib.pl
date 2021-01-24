@@ -1,4 +1,4 @@
-# Copyright (C) 2004-2019
+# Copyright (C) 2004-2021
 # Emmanuel Saracco <emmanuel@esaracco.fr>
 #
 # This program is free software; you can redistribute it and/or modify
@@ -1430,7 +1430,7 @@ sub trans_char2ent ( $ $ )
   # do not work with webmin "/lang/*" files
   return if ($path =~ /$reg/);
 
-  # fingerprint file (always in en/en.UTF-8 language)
+  # fingerprint file ("en" file)
   if ($path =~ /fingerprints/)
   {
     $lang = $ref_lang;

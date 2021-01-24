@@ -1,1 +1,1 @@
-desc_fr.UTF-8=Assistant de traduction
+desc_fr=Assistant de traduction

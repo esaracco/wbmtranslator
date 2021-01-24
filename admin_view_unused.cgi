@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# Copyright (C) 2004-2019
+# Copyright (C) 2004-2021
 # Emmanuel Saracco <emmanuel@esaracco.fr>
 #
 # GNU GENERAL PUBLIC LICENSE
@@ -36,13 +36,10 @@ if (defined ($in{'remove'}))
   # interface
   if ($search_type eq 'interface')
   {
-    foreach my $lang (qw(en en.UTF-8))
+    if (-s "$path_lang/lang/en")
     {
-      if (-s "$path_lang/lang/$lang")
-      {
-        %fcontent = &trans_get_items ("$path_lang/lang/$lang");
-        &_purge_items ("$path_lang/lang/$lang", \%fcontent, \%unused);
-      }
+      %fcontent = &trans_get_items ("$path_lang/lang/en");
+      &_purge_items ("$path_lang/lang/en", \%fcontent, \%unused);
     }
   }
   # config
