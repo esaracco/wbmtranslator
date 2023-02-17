@@ -1,8 +1,4 @@
-<p align="center"><img src="https://wbmtranslator.esaracco.fr/images/wbmtranslator.png"/></p>
-
 # wbmtranslator
-
- [Project homepage](https://wbmtranslator.esaracco.fr)
 
 wbmtranslator is the translation assistant for [Webmin](http://www.webmin.com) / [Usermin](http://www.webmin.com/usermin.html) modules. It allows Webmin / Usermin translators to have a global view of current translations for all registered modules and themes, including the web interface and configuration screens. They can accurately track changes, create or update translations, send them to the Webmin team, and more.
 
